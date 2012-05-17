@@ -1,7 +1,7 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="de">
 	<head>
-		<title>URL Test</title>
+		<title>URI Test</title>
 		
 		<link rel="stylesheet" type="text/css" href="./css/test.css" />
 		
@@ -15,11 +15,12 @@
 				
 				var input = document.createElement('input');
 				input.setAttribute('type', "text");
-				input.value = "http://files.localnet/URL/test/url.html";
+				input.value = "http://user:password@files.localnet:80/URL/test/url.html?q=test&item=abc,xyz,stu#location";
 				input.addEventListener('keyup', onKeyUp, false);
 				body.appendChild(input);
 				
 				var output = document.createElement('div');
+				output.className = "output";
 				body.appendChild(output);
 				
 				function onKeyUp() {
@@ -30,11 +31,15 @@
 					node = document.createElement('p');
 					
 					try {
-						var scheme = URLSchemeComponent.StringURL(strurl);
-						var name = URLNameComponent.StringURL(strurl);
-						var path = URLPathComponent.StringURL(strurl);
+						var scheme = URIComponent.URIString(strurl, URIComponent.prototype.TYPE_SCHEME);
+						var user   = URIComponent.URIString(strurl, URIComponent.prototype.TYPE_USER);
+						var name   = URIComponent.URIString(strurl, URIComponent.prototype.TYPE_NAME);
+						var port   = URIComponent.URIString(strurl, URIComponent.prototype.TYPE_PORT);
+						var path   = URIComponent.URIString(strurl, URIComponent.prototype.TYPE_PATH);
+						var query  = URIComponent.URIString(strurl, URIComponent.prototype.TYPE_QUERY);
+						var frag   = URIComponent.URIString(strurl, URIComponent.prototype.TYPE_FRAGMENT);
 						
-						if (scheme.valid) {
+						if (!scheme.empty) {
 							var child = document.createElement('span');
 							child.className = "scheme";
 							child.textContent = scheme;
@@ -43,8 +48,19 @@
 							node.appendChild(document.createTextNode(":"));
 						}
 						
-						if (name.valid) {
+						if (!user.empty) {
 							node.appendChild(document.createTextNode("//"));
+							
+							child = document.createElement('span');
+							child.className = "user";
+							child.textContent = user;
+							node.appendChild(child);
+							
+							node.appendChild(document.createTextNode("@"));
+						}
+						
+						if (!name.empty) {
+							if (user.empty) node.appendChild(document.createTextNode("//"));
 							
 							child = document.createElement('span');
 							child.className = "name";
@@ -52,10 +68,39 @@
 							node.appendChild(child);
 						}
 						
-						if (path.segment.length) {
+						if (!port.empty) {
+							node.appendChild(document.createTextNode(":"));
+							
+							child = document.createElement('span');
+							child.className = "port";
+							child.textContent = port;
+							node.appendChild(child);
+						}
+						
+						if (!path.empty) {
 							child = document.createElement('span');
 							child.className = "path";
+//							if (path.absolute) child.classList.add('abs');
+//							if (!path.resource) child.classList.add('end');
 							child.textContent = path;
+							node.appendChild(child);
+						}
+						
+						if (!query.empty) {
+							node.appendChild(document.createTextNode("?"));
+							
+							child = document.createElement('span');
+							child.className = "query";
+							child.textContent = query;
+							node.appendChild(child);
+						}
+						
+						if (!frag.empty) {
+							node.appendChild(document.createTextNode("#"));
+							
+							child = document.createElement('span');
+							child.className = "frag";
+							child.textContent = frag;
 							node.appendChild(child);
 						}
 						

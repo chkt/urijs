@@ -1,10 +1,18 @@
 input[type='text'] {-moz-box-sizing:border-box; box-sizing:border-box; width: 100%; height:24px; border:1px solid #000; padding:0 10px; line-height:24px; font-size:12px; font-family:'Consolas',monospace;}
 
-span {display:inline-block; vertical-align:baseline; padding:5px;}
-span.scheme {color:#00f;}
-span.name   {color:#0f0;}
-span.path   {color:#660;}
-span.error  {color:#f00;}
+div.output {font-family:'Consolas',monospace;line-height:18px; font-size:12px;}
+
+span {display:inline-block; vertical-align:baseline; border-radius:2px; padding:0 5px; color:#fff;}
+span.scheme   {background-color:#000;}
+span.user     {background-color:#cc0;}
+span.name     {background-color:#0c0;}
+span.port     {background-color:#6c6;}
+span.path     {background-color:#00c;}
+span.path.abs {border-left:5px solid #006; padding-left:0;}
+span.path.end {border-right:5px solid #006; padding-right:0;}
+span.query    {background-color:#c0c;}
+span.frag     {background-color:#c06;}
+span.error    {color:#f00;}
 
 span.string {color:#ccc;}
 span.string::before {content:'\"'; display:inline;}
