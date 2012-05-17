@@ -33,7 +33,7 @@
 					try {
 						var scheme = URIComponent.URIString(strurl, URIComponent.prototype.TYPE_SCHEME);
 						var user   = URIComponent.URIString(strurl, URIComponent.prototype.TYPE_USER);
-						var name   = URIComponent.URIString(strurl, URIComponent.prototype.TYPE_NAME);
+						var name   = URINameComponent.URIString(strurl);
 						var port   = URIComponent.URIString(strurl, URIComponent.prototype.TYPE_PORT);
 						var path   = URIComponent.URIString(strurl, URIComponent.prototype.TYPE_PATH);
 						var query  = URIComponent.URIString(strurl, URIComponent.prototype.TYPE_QUERY);
@@ -64,8 +64,20 @@
 							
 							child = document.createElement('span');
 							child.className = "name";
-							child.textContent = name;
 							node.appendChild(child);
+							
+							var segment = name.segment;
+							
+							for (var i = segment.length - 1; i > -1; i--) {
+								var segmentNode = document.createElement('span');
+								segmentNode.className = "name-segment";
+								segmentNode.textContent = segment[i];
+								child.appendChild(segmentNode);
+								
+								child.appendChild(document.createTextNode("."));
+							}
+							
+							child.removeChild(child.lastChild);
 						}
 						
 						if (!port.empty) {
