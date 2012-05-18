@@ -35,7 +35,7 @@
 						var user   = URIComponent.URIString(strurl, URIComponent.prototype.TYPE_USER);
 						var name   = URINameComponent.URIString(strurl);
 						var port   = URIComponent.URIString(strurl, URIComponent.prototype.TYPE_PORT);
-						var path   = URIComponent.URIString(strurl, URIComponent.prototype.TYPE_PATH);
+						var path   = URIPathComponent.URIString(strurl);
 						var query  = URIComponent.URIString(strurl, URIComponent.prototype.TYPE_QUERY);
 						var frag   = URIComponent.URIString(strurl, URIComponent.prototype.TYPE_FRAGMENT);
 						
@@ -92,10 +92,22 @@
 						if (!path.empty) {
 							child = document.createElement('span');
 							child.className = "path";
-//							if (path.absolute) child.classList.add('abs');
-//							if (!path.resource) child.classList.add('end');
-							child.textContent = path;
+							if (path.absolute) child.classList.add('abs');
+							if (!path.lastSegment) child.classList.add('end');
 							node.appendChild(child);
+							
+							segment = path.segment;
+							
+							for (var i = 0; i < segment.length; i++) {
+								segmentNode = document.createElement('span');
+								segmentNode.className = "path-segment";
+								segmentNode.textContent = segment[i];
+								child.appendChild(segmentNode);
+								
+								child.appendChild(document.createTextNode("/"));
+							}
+							
+							child.removeChild(child.lastChild);
 						}
 						
 						if (!query.empty) {
