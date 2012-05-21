@@ -29,6 +29,8 @@
 					for (var node = output.firstChild; node; node = output.firstChild) output.removeChild(node);
 					
 					node = document.createElement('p');
+					output.appendChild(node);
+
 					
 					try {
 						var scheme = URIComponent.URIString(strurl, URIComponent.prototype.TYPE_SCHEME);
@@ -113,12 +115,51 @@
 						}
 						
 						if (!query.empty) {
+							var queryData = URIKeyValue.String(query.string);
+							query.string = queryData.string;
+							queryData.string = query.string;
+							
 							node.appendChild(document.createTextNode("?"));
 							
 							child = document.createElement('span');
 							child.className = "query";
-							child.textContent = query;
 							node.appendChild(child);
+							
+							var key = queryData.key;
+							var val = queryData.value;
+							
+							for (var i = 0; i < key.length; i++) {
+								segmentNode = document.createElement('span');
+								segmentNode.className = "query-segment";
+								child.appendChild(segmentNode);
+								child.appendChild(document.createTextNode(queryData.keyLimit));
+								
+								var tokenNode = document.createElement('span');
+								tokenNode.className = "query-key";
+								tokenNode.textContent = key[i];
+								segmentNode.appendChild(tokenNode);
+								
+								if (!val[key[i]]) continue;
+								
+								segmentNode.appendChild(document.createTextNode(queryData.valueLimit));
+								
+								for (var j = 0; j < val[key[i]].length; j++) {
+									tokenNode = document.createElement('span');
+									tokenNode.className = "query-value";
+									tokenNode.textContent = val[key[i]][j];
+									segmentNode.appendChild(tokenNode);
+									segmentNode.appendChild(document.createTextNode(queryData.listLimit));
+								}
+								
+								segmentNode.removeChild(segmentNode.lastChild);
+							}
+							
+							child.removeChild(child.lastChild);
+							
+//							child = document.createElement('span');
+//							child.className = "query";
+//							child.textContent = query;
+//							node.appendChild(child);
 						}
 						
 						if (!frag.empty) {
@@ -146,6 +187,7 @@
 						return;
 					} catch(err) {
 						node = document.createElement('p');
+						output.appendChild(node);
 						
 						child = document.createElement('span');
 						child.className = 'string';
@@ -161,8 +203,6 @@
 						
 						node.appendChild(document.createTextNode("."));
 					}
-					
-					output.appendChild(node);
 				}
 				
 				
