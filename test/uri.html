@@ -90,6 +90,8 @@
 						}
 						
 						if (!path.empty) {
+							path.resolve();
+							
 							child = document.createElement('span');
 							child.className = "path";
 							if (path.absolute) child.classList.add('abs');
