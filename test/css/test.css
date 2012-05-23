@@ -26,6 +26,12 @@ span.query-segment:last-child {margin-right:-3px;}
 span.query-key {vertical-align:baseline; background-color:#b2b; border-radius:0; padding:0 2px; line-height:12px;}
 span.query-value {vertical-align:baseline; background-color:#d4d; border-radius:0; padding:0 2px; line-height:12px;}
 
+span.frag-segment {vertical-align:baseline; margin: 0 5px; background-color:#903; line-height:14px;}
+span.frag-segment:first-child {margin-left:-3px;}
+span.frag-segment:last-child {margin-right:-3px;}
+span.frag-key {vertical-align:baseline; background-color:#b29; border-radius:0; padding:0 2px; line-height:12px;}
+span.frag-value {vertical-align:baseline; background-color:#b2b; border-radius:0; padding:0 2px; line-height:12px;}
+
 span.string {color:#ccc;}
 span.string::before {content:'\"'; display:inline;}
 span.string::after {content:'\"'; display:inline;}

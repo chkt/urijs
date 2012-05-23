@@ -119,6 +119,15 @@
 							query.string = queryData.string;
 							queryData.string = query.string;
 							
+							URIKeyValue.Key(
+								queryData.key,
+								queryData.value,
+								URIKeyValue.DELIMITER_DEFAULT_KEY,
+								URIKeyValue.DELIMITER_DEFAULT_VALUE,
+								URIKeyValue.SEPERATOR_DEFAULT_VALUE,
+								queryData
+							);
+							
 							node.appendChild(document.createTextNode("?"));
 							
 							child = document.createElement('span');
@@ -155,26 +164,62 @@
 							}
 							
 							child.removeChild(child.lastChild);
-							
-//							child = document.createElement('span');
-//							child.className = "query";
-//							child.textContent = query;
-//							node.appendChild(child);
 						}
 						
 						if (!frag.empty) {
+//							var fragData = URIKeyValue.String(frag.string, "_", "-", "+");
+							var fragData = URIKeyValue.String(frag.string);
+							frag.string = fragData.string;
+							
+							URIKeyValue.Key(
+								fragData.key,
+								fragData.value,
+								null,
+								null,
+								null,
+								fragData
+							);
+							
 							node.appendChild(document.createTextNode("#"));
 							
 							child = document.createElement('span');
 							child.className = "frag";
-							child.textContent = frag;
 							node.appendChild(child);
+							
+							key = fragData.key;
+							val = fragData.value;
+							
+							for (i = 0; i < key.length; i++) {
+								segmentNode = document.createElement('span');
+								segmentNode.className = "frag-segment";
+								child.appendChild(segmentNode);
+								child.appendChild(document.createTextNode(fragData.keyLimit));
+								
+								tokenNode = document.createElement('span');
+								tokenNode.className = "frag-key";
+								tokenNode.textContent = key[i];
+								segmentNode.appendChild(tokenNode);
+								
+								if (!val[key[i]]) continue;
+								
+								segmentNode.appendChild(document.createTextNode(fragData.valueLimit));
+								
+								for (j = 0; j < val[key[i]].length; j++) {
+									tokenNode = document.createElement('span');
+									tokenNode.className = "frag-value";
+									tokenNode.textContent = val[key[i]][j];
+									segmentNode.appendChild(tokenNode);
+									segmentNode.appendChild(document.createTextNode(fragData.listLimit));
+								}
+								
+								segmentNode.removeChild(segmentNode.lastChild);
+							}
+							
+							child.removeChild(child.lastChild);
 						}
 						
 						if (node.childNodes.length) {
-							node.appendChild(document.createTextNode(" parsed."));
-							output.appendChild(node);
-							
+							node.appendChild(document.createTextNode(" parsed."));							
 							return;
 						}
 						
