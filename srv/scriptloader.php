@@ -18,6 +18,8 @@ $file = array(
 	'URI'              => '/URI/lib/URI.js'
 );
 
+$cache = '/URI/cache/';
+
 
 
 
@@ -36,7 +38,7 @@ function resolve(&$token, array &$location, array &$dependent) {
 	global $depend;
 	global $file;
 	
-	if ($location[$token]) return;
+	if (key_exists($token, $location)) return;
 	
 	if (key_exists($token, $alias)) {
 		$str = explode(",", $alias[$token]);
@@ -60,7 +62,34 @@ function resolve(&$token, array &$location, array &$dependent) {
 }
 
 
-function googleClosureCompress(&$string, &$size) {
+function readCache(&$cache, &$location, &$target) {
+	if (!file_exists($cache)) return false;
+	
+	$time = filemtime($cache);
+	
+	foreach ($location as $name) {
+		$name = $_SERVER['DOCUMENT_ROOT'] . $name;
+		
+		if (!file_exists($name) || filemtime($name) > $time) return false;		
+	}
+	
+	$target .= file_get_contents($cache);
+	
+	return true;
+}
+
+function writeCache(&$name, &$content) {
+	if (!file_exists($name)) {
+		
+	}
+	
+	if (file_put_contents($name, $content) === false) return false;
+	
+	return true;
+}
+
+
+function googleClosureCompress(&$string, &$size, &$target) {
 	
 	switch ($size) {
 		case 1 :
@@ -72,7 +101,7 @@ function googleClosureCompress(&$string, &$size) {
 		case 3 :
 			$level = 'ADVANCED_OPTIMIZATIONS';
 			break;
-		default : return '';
+		default : return false;
 	}
 	
 	$content  = 'js_code=' . urlencode($string) . '&';
@@ -90,23 +119,27 @@ function googleClosureCompress(&$string, &$size) {
 	$context  = stream_context_create($connection);
 	$fp       = @ fopen('http://closure-compiler.appspot.com/compile', 'rb', false, $context);
 	
-	if (!$fp) return '';
+	if (!$fp) return false;
 	
 	$response = @ stream_get_contents($fp);
 	
-	if ($response == false) return '';
+	if ($response == false) return false;
 	
 	$json = json_decode($response);
 	
-	if (!$json->compiledCode) return '';
+	if (!$json->compiledCode) return false;
 	
-	return $json->compiledCode;
+	$target .= $json->compiledCode;
+	
+	return true;
 }	
 
 
 
 
 header('Content-Type: text/javascript; charset=utf-8');
+
+if (!key_exists('content', $_GET)) exit();
 
 $token = explode(',', $_GET['content']);
 $location = array(); $dependent = array();
@@ -117,10 +150,23 @@ foreach ($token as $item) resolve($item, $location, $dependent);
 foreach ($location as $name) $out .= file_get_contents($_SERVER['DOCUMENT_ROOT'] . $name) . "\n\n\n\n\n";
 
 
-$compress = (int) $_GET['compress'];
+$compress = 0;
 
-if ($compress) $str_cmp = googleClosureCompress($out, $compress);
-if ($str_cmp)  $out = $str_cmp;
+if (key_exists('compress', $_GET)) $compress = (int) $_GET['compress'];
+
+if ($compress) {
+	$compressed = '';
+	$name = $_SERVER['DOCUMENT_ROOT'] . $cache . $_GET['compress'] . "-" . $_GET['content'] . '.js';
+	
+	$cache = readCache($name, $location, $compressed);
+	
+	if (!$cache) {
+		if (googleClosureCompress($out, $compress, $compressed)) writeCache($name, $compressed);
+	}
+	
+	if ($compressed) $out = $compressed;
+}
+
 
 print $out;
 ?>
