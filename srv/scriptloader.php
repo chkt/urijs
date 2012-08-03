@@ -18,7 +18,7 @@ $file = array(
 	'URI'              => '/URI/lib/URI.js'
 );
 
-$cache = '/URI/cache/';
+$cache = '/cache/';
 
 
 
@@ -61,11 +61,21 @@ function resolve(&$token, array &$location, array &$dependent) {
 	$location[$token] = $file[$token];
 }
 
-
-function readCache(&$cache, &$location, &$target) {
-	if (!file_exists($cache)) return false;
+function resolveParam($param) {
+	$res = array(); $dependent = array();
 	
-	$time = filemtime($cache);
+	$token = explode(",", $param);
+	
+	foreach ($token as $item) resolve($item, $res, $dependent);
+	
+	return $res;
+}
+
+
+function readCache(&$cacheId, &$location, &$target) {
+	if (!file_exists($cacheId)) return false;
+	
+	$time = filemtime($cacheId);
 	
 	foreach ($location as $name) {
 		$name = $_SERVER['DOCUMENT_ROOT'] . $name;
@@ -73,17 +83,13 @@ function readCache(&$cache, &$location, &$target) {
 		if (!file_exists($name) || filemtime($name) > $time) return false;		
 	}
 	
-	$target .= file_get_contents($cache);
+	$target .= file_get_contents($cacheId);
 	
 	return true;
 }
 
-function writeCache(&$name, &$content) {
-	if (!file_exists($name)) {
-		
-	}
-	
-	if (file_put_contents($name, $content) === false) return false;
+function writeCache(&$cacheId, &$content) {
+	if (file_put_contents($cacheId, $content) === false) return false;
 	
 	return true;
 }
@@ -139,34 +145,38 @@ function googleClosureCompress(&$string, &$size, &$target) {
 
 header('Content-Type: text/javascript; charset=utf-8');
 
-if (!key_exists('content', $_GET)) exit();
+$out = ''; $content = ''; $compress = 0;
 
-$token = explode(',', $_GET['content']);
-$location = array(); $dependent = array();
-$out = '';
-
-foreach ($token as $item) resolve($item, $location, $dependent);
-
-foreach ($location as $name) $out .= file_get_contents($_SERVER['DOCUMENT_ROOT'] . $name) . "\n\n\n\n\n";
-
-
-$compress = 0;
-
+if (key_exists('content', $_GET)) $content = $_GET['content'];
 if (key_exists('compress', $_GET)) $compress = (int) $_GET['compress'];
 
+if (!$content) exit();
+
+$location = resolveParam($content);
+
 if ($compress) {
-	$compressed = '';
-	$name = $_SERVER['DOCUMENT_ROOT'] . $cache . $_GET['compress'] . "-" . $_GET['content'] . '.js';
+	$cacheId = $_SERVER['DOCUMENT_ROOT'] . $cache . $compress . "-" . $content;
 	
-	$cache = readCache($name, $location, $compressed);
-	
-	if (!$cache) {
-		if (googleClosureCompress($out, $compress, $compressed)) writeCache($name, $compressed);
+	if (readCache($cacheId, $location, $out)) {
+		print $out;
+		exit();
 	}
-	
-	if ($compressed) $out = $compressed;
 }
 
+foreach($location as $name) {
+	$fileId = $_SERVER['DOCUMENT_ROOT'] . $name;
+	
+	if (file_exists($fileId)) $out .= file_get_contents ($fileId) . "\n\n\n\n\n";
+}
+
+if ($compress) {
+	$outCmp = '';
+	
+	if (googleClosureCompress($out, $compress, $outCmp)) {
+		writeCache($cacheId, $outCmp);
+		$out = $outCmp;
+	}
+}
 
 print $out;
 ?>
