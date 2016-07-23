@@ -56,4 +56,25 @@ export default class ExtendedString extends String {
 
 		return res;
 	}
+
+	/**
+	 * Returns an instance created from a string of percent encoded character codes
+	 * @param {String} char
+	 * @returns {String}
+	 * @throws {TypeError} if char is not a String
+	 * @throws {Error} if char is not a sequence of percent encoded character codes
+	 */
+	static fromPctChar(char) {
+		if (typeof char !== 'string') throw new TypeError();
+
+		const match = char.match(/^(?:%[A-Fa-f0-9]{2})+$/);
+
+		if (match === null) throw new Error();
+
+		const str = match[0], code = [];
+
+		for (var i = str.length - 2; i > -1; i -= 3) code.unshift(Number.parseInt("0x" + str.substr(i, 2)));
+
+		return ExtendedString.fromUtf8CharCode(code);
+	}
 }
