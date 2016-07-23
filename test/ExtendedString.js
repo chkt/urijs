@@ -63,7 +63,7 @@ describe('ExtendedString', () => {
 			_assert.throws(() => String.fromUtf8CharCode([ 0b11110111, 0b10111111, 0b10111111, 0b11000000 ]), Error);
 		});
 
-		it("should return the string referenced by its argument", () => {
+		it("should return the decoded string", () => {
 			_assert.equal(String.fromUtf8CharCode([ 0x20 ]), ' ');
 			_assert.equal(String.fromUtf8CharCode([ 0x7e ]), '~');
 			_assert.equal(String.fromUtf8CharCode([ 0xc2, 0xa1 ]), '¡');
@@ -74,6 +74,37 @@ describe('ExtendedString', () => {
 			_assert.equal(String.fromUtf8CharCode([ 0xf0, 0x90, 0x80, 0x80 ]), '𐀀');
 			_assert.equal(String.fromUtf8CharCode([ 0xf4, 0x80, 0x8f, 0xbf ]), '􀏿');
 			_assert.equal(String.fromUtf8CharCode([ 0xc2, 0xa1, 0xc3, 0xbf, 0x7e]), '¡ÿ~');
+		});
+	});
+
+	describe('.fromPctChar', () => {
+		it("should only accept a percent encoded string", () => {
+			_assert.throws(() => String.fromPctChar(), TypeError);
+			_assert.throws(() => String.fromPctChar(null), TypeError);
+			_assert.throws(() => String.fromPctChar(true), TypeError);
+			_assert.throws(() => String.fromPctChar(1), TypeError);
+			_assert.throws(() => String.fromPctChar(""), Error);
+			_assert.throws(() => String.fromPctChar("1"), Error);
+			_assert.doesNotThrow(() => String.fromPctChar("%20"));
+			_assert.throws(() => String.fromPctChar(() => 1), TypeError);
+			_assert.throws(() => String.fromPctChar({ "1" : 1 }), TypeError);
+			_assert.throws(() => String.fromPctChar([ 1 ]), TypeError);
+		});
+
+		it("should only accept a correctly percent encoded string", () => {
+			 const pct = '%20%7e%7E';
+
+			for (let i = 1, l = pct.length; i < l; i += 1) {
+				if (i % 3 === 0) _assert.doesNotThrow(() => String.fromPctChar(pct.substr(0, i)));
+				else _assert.throws(() => String.fromPctChar(pct.substr(0, i)), Error);
+			}
+		});
+
+		it("should return the decoded string", () => {
+			_assert.equal(String.fromPctChar("%20"), " ");
+			_assert.equal(String.fromPctChar("%25"), "%");
+			_assert.equal(String.fromPctChar("%7e"), "~");
+			_assert.equal(String.fromPctChar("%c3%bf"), "ÿ");
 		});
 	});
 });
