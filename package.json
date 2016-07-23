@@ -1,0 +1,53 @@
+{
+	"name" : "",
+	"description" : "RFC 3986 compliant uri manipulation",
+	"version" : "0.3.0",
+	"license" : "MIT",
+
+	"keywords" : [
+		"url",
+		"uri",
+		"rfc 3986",
+		"rfc 1738"
+	],
+
+	"author" : {
+		"name" : "Christoph Kettelhoit",
+		"email" : "ck@christoph-kettelhoit.de",
+		"url" : "christoph-kettelhoit.de"
+	},
+
+	"repository" : {
+		"type" : "git",
+		"url" : "https://github.com/chkt/urijs"
+	},
+
+	"scripts" : {
+		"gulp" : "node ./node_modules/gulp/bin/gulp.js",
+		"test" : "node ./node_modules/gulp/bin/gulp.js test"
+	},
+
+	"main" : "es5/index.js",
+
+	"files" : [
+		"source/",
+		"es5/"
+	],
+
+	"babel" : {
+		"presets" : [ "es2015" ]
+	},
+
+	"devDependencies" : {
+		"del" : "~2.0",
+		"babel" : "~6.5",
+		"babel-polyfill" : "~6.5",
+		"babel-preset-es2015": "~6.5",
+		"jscs" : "~2.1",
+		"gulp" : "~3.9",
+		"gulp-jshint" : "~1.11",
+		"gulp-jscs" : "~2.0",
+		"gulp-babel" : "~6.1",
+		"gulp-mocha" : "~2.1"
+	}
+}
