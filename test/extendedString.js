@@ -34,23 +34,44 @@ describe("fromUtf8CharCode", () => {
 	it("should only accept correctly encoded character sequences", () => {
 		_assert.doesNotThrow(() => exstr.fromUtf8CharCode([ 0b00000000 ]));
 		_assert.doesNotThrow(() => exstr.fromUtf8CharCode([ 0b01111111 ]));
+
 		_assert.throws(() => exstr.fromUtf8CharCode([ 0b10111111 ]), Error);
 		_assert.throws(() => exstr.fromUtf8CharCode([ 0b11111011 ]), Error);
-		_assert.doesNotThrow(() => exstr.fromUtf8CharCode([ 0b11000000, 0b10000000]));
+
+		_assert.throws(() => exstr.fromUtf8CharCode([ 0b11000000, 0b10000000 ]), Error);
+		_assert.throws(() => exstr.fromUtf8CharCode([ 0b11000000, 0b10111111 ]), Error);
+		_assert.throws(() => exstr.fromUtf8CharCode([ 0b11000001, 0b10000000 ]), Error);
+		_assert.throws(() => exstr.fromUtf8CharCode([ 0b11000001, 0b10111111 ]), Error);
+		_assert.doesNotThrow(() => exstr.fromUtf8CharCode([ 0b11000010, 0b10000000] ));
 		_assert.doesNotThrow(() => exstr.fromUtf8CharCode([ 0b11011111, 0b10111111]));
+
 		_assert.throws(() => exstr.fromUtf8CharCode([ 0b11011111 ]), Error);
 		_assert.throws(() => exstr.fromUtf8CharCode([ 0b11011111, 0b00111111 ]), Error);
 		_assert.throws(() => exstr.fromUtf8CharCode([ 0b11011111, 0b11000000 ]), Error);
-		_assert.doesNotThrow(() => exstr.fromUtf8CharCode([ 0b11100000, 0b10000000, 0b10000000 ]));
+
+		_assert.throws(() => exstr.fromUtf8CharCode([ 0b11100000, 0b10000000, 0b10000000 ]), Error);
+		_assert.throws(() => exstr.fromUtf8CharCode([ 0b11100000, 0b10011111, 0b10111111 ]), Error);
+		_assert.doesNotThrow(() => exstr.fromUtf8CharCode([ 0b11100000, 0b10100000, 0b10000000 ]));
+		_assert.doesNotThrow(() => exstr.fromUtf8CharCode([ 0b11100000, 0b10111111, 0b10111111 ]));
+		_assert.doesNotThrow(() => exstr.fromUtf8CharCode([ 0b11100001, 0b10000000, 0b10000000 ]));
 		_assert.doesNotThrow(() => exstr.fromUtf8CharCode([ 0b11101111, 0b10111111, 0b10111111 ]));
+
 		_assert.throws(() => exstr.fromUtf8CharCode([ 0b11101111 ]), Error);
 		_assert.throws(() => exstr.fromUtf8CharCode([ 0b11101111, 0b10111111 ]), Error);
 		_assert.throws(() => exstr.fromUtf8CharCode([ 0b11101111, 0b00111111, 0b10111111]), Error);
 		_assert.throws(() => exstr.fromUtf8CharCode([ 0b11101111, 0b11000000, 0b10111111]), Error);
 		_assert.throws(() => exstr.fromUtf8CharCode([ 0b11101111, 0b10111111, 0b00111111]), Error);
 		_assert.throws(() => exstr.fromUtf8CharCode([ 0b11101111, 0b10111111, 0b11000000]), Error);
-		_assert.doesNotThrow(() => exstr.fromUtf8CharCode([ 0b11110000, 0b10000000, 0b10000000, 0b10000000 ]));
-		_assert.doesNotThrow(() => exstr.fromUtf8CharCode([ 0b11110111, 0b10111111, 0b10111111, 0b10111111 ]));
+
+		_assert.throws(() => exstr.fromUtf8CharCode([ 0b11110000, 0b10000000, 0b10000000, 0b10000000 ]), Error);
+		_assert.throws(() => exstr.fromUtf8CharCode([ 0b11110000, 0b10001111, 0b10111111, 0b10111111 ]), Error);
+		_assert.doesNotThrow(() => exstr.fromUtf8CharCode([ 0b11110000, 0b10010000, 0b10000000, 0b10000000 ]));
+		_assert.doesNotThrow(() => exstr.fromUtf8CharCode([ 0b11110000, 0b10111111, 0b10111111, 0b10111111 ]));
+		_assert.doesNotThrow(() => exstr.fromUtf8CharCode([ 0b11110001, 0b10000000, 0b10000000, 0b10000000 ]));
+		_assert.doesNotThrow(() => exstr.fromUtf8CharCode([ 0b11110100, 0b10001111, 0b10111111, 0b10111111 ]));
+		_assert.throws(() => exstr.fromUtf8CharCode([ 0b11110100, 0b10010000, 0b10000000, 0b10000000 ]), Error);
+		_assert.throws(() => exstr.fromUtf8CharCode([ 0b11110111, 0b10111111, 0b10111111, 0b10111111 ]), Error);
+
 		_assert.throws(() => exstr.fromUtf8CharCode([ 0b11110111 ]), Error);
 		_assert.throws(() => exstr.fromUtf8CharCode([ 0b11110111, 0b10111111 ]), Error);
 		_assert.throws(() => exstr.fromUtf8CharCode([ 0b11110111, 0b10111111, 0b10111111 ]), Error);
@@ -105,7 +126,4 @@ describe('fromPctChar', () => {
 		_assert.equal(exstr.fromPctChar("%7e"), "~");
 		_assert.equal(exstr.fromPctChar("%c3%bf"), "ÿ");
 	});
-});
-
-describe('u8CharCodeAt', () => {
 });
