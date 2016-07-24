@@ -7,11 +7,63 @@ import * as component from '../source/URIComponent';
 
 describe('URIComponent', () => {
 	describe('.ComponentString', () => {
-		it("should return an initialized instance");
-		it("should require a valid component type as first argument");
-		it("should accept a string as optional second argument");
-		it("should accept an URIComponent as optional third argument");
-		it("should return the reinitialized third argument if provided");
+		it("should require a valid component type as first argument", () => {
+			_assert.throws(() => URIComponent.ComponentString(), TypeError);
+			_assert.throws(() => URIComponent.ComponentString(null), TypeError);
+			_assert.throws(() => URIComponent.ComponentString(true), TypeError);
+			_assert.throws(() => URIComponent.ComponentString(0), TypeError);
+			_assert.throws(() => URIComponent.ComponentString(8), TypeError);
+			_assert.throws(() => URIComponent.ComponentString("1"), TypeError);
+			_assert.throws(() => URIComponent.ComponentString(/^1$/), TypeError);
+			_assert.throws(() => URIComponent.ComponentString(() => 1), TypeError);
+			_assert.throws(() => URIComponent.ComponentString({ "1" : 1 }), TypeError);
+			_assert.doesNotThrow(() => URIComponent.ComponentString(component.TYPE_SCHEME));
+			_assert.doesNotThrow(() => URIComponent.ComponentString(component.TYPE_USER));
+			_assert.doesNotThrow(() => URIComponent.ComponentString(component.TYPE_NAME));
+			_assert.doesNotThrow(() => URIComponent.ComponentString(component.TYPE_PORT));
+			_assert.doesNotThrow(() => URIComponent.ComponentString(component.TYPE_PATH));
+			_assert.doesNotThrow(() => URIComponent.ComponentString(component.TYPE_QUERY));
+			_assert.doesNotThrow(() => URIComponent.ComponentString(component.TYPE_FRAGMENT));
+		});
+
+		it("should accept a string as optional second argument", () => {
+			_assert.throws(() => URIComponent.ComponentString(component.TYPE_PATH, null), TypeError);
+			_assert.throws(() => URIComponent.ComponentString(component.TYPE_PATH, true), TypeError);
+			_assert.throws(() => URIComponent.ComponentString(component.TYPE_PATH, 1), TypeError);
+			_assert.doesNotThrow(() => URIComponent.ComponentString(component.TYPE_PATH, ""));
+			_assert.doesNotThrow(() => URIComponent.ComponentString(component.TYPE_PATH, "1"));
+			_assert.throws(() => URIComponent.ComponentString(component.TYPE_PATH, /^1$/), TypeError);
+			_assert.throws(() => URIComponent.ComponentString(component.TYPE_PATH, () => 1), TypeError);
+			_assert.throws(() => URIComponent.ComponentString(component.TYPE_PATH, { "1" : 1 }), TypeError);
+		});
+
+		it("should return an initialized instance", () => {
+			const ins = URIComponent.ComponentString(component.TYPE_PATH, "1");
+
+			_assert(ins instanceof URIComponent);
+			_assert.strictEqual(ins.type, component.TYPE_PATH);
+			_assert.strictEqual(ins.string, "1");
+		});
+
+		it("should accept an URIComponent as optional third argument", () => {
+			const ins = new URIComponent(component.TYPE_SCHEME);
+
+			_assert.throws(() => URIComponent.ComponentString(component.TYPE_PATH, "1", null), TypeError);
+			_assert.throws(() => URIComponent.ComponentString(component.TYPE_PATH, "1", true), TypeError);
+			_assert.throws(() => URIComponent.ComponentString(component.TYPE_PATH, "1", 1), TypeError);
+			_assert.throws(() => URIComponent.ComponentString(component.TYPE_PATH, "1", "1"), TypeError);
+			_assert.throws(() => URIComponent.ComponentString(component.TYPE_PATH, "1", /^1$/), TypeError);
+			_assert.throws(() => URIComponent.ComponentString(component.TYPE_PATH, "1", () => 1), TypeError);
+			_assert.throws(() => URIComponent.ComponentString(component.TYPE_PATH, "1", { "1" : 1 }), TypeError);
+			_assert.throws(() => URIComponent.ComponentString(component.TYPE_PATH, "1", [ 1 ]), TypeError);
+			_assert.doesNotThrow(() => URIComponent.ComponentString(component.TYPE_PATH, "1", ins));
+		});
+
+		it("should return the reinitialized third argument if provided", () => {
+			const ins = new URIComponent(component.TYPE_SCHEME);
+
+			_assert.strictEqual(URIComponent.ComponentString(component.TYPE_PATH, "1", ins), ins);
+		});
 	});
 
 	describe('.URIString', () => {
