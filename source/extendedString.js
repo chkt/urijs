@@ -1,4 +1,27 @@
 /**
+ * Returns a copy of this extended by pattern
+ * @param {String} pattern The extension pattern
+ * @param {Uint} [length] The extension length
+ * @returns {String}
+ * @throws {TypeError} if pattern is not a nonempty String
+ * @throws {TypeError} if length is not an Uint or undefined
+ */
+function _extendLeft(pattern, length) {
+	if (length === undefined) length = pattern.length;
+
+	if (
+		typeof pattern !== 'string' || pattern === "" ||
+		!Number.isSafeInteger(length) || length < 0
+	) throw new TypeError();
+
+	const str = String(this);
+
+	for (let l = pattern.length; l < length; ) pattern += pattern, l *= 2;
+
+	return pattern.substr(0, Math.max(length - str.length, 0)) + str;
+}
+
+/**
  * Returns an Array of utf-8 encoded character codes of this at index
  * @param {Int} index The character index
  * @returns {Array}
@@ -130,6 +153,19 @@ export function fromPctChar(char) {
 	for (var i = str.length - 2; i > -1; i -= 3) code.unshift(Number.parseInt("0x" + str.substr(i, 2)));
 
 	return fromUtf8CharCode(code);
+}
+
+/**
+ * Returns a copy of string extended by pattern
+ * @param {String} string The source string
+ * @param {String} pattern The extension pattern
+ * @param {Uint} [length] The extension length
+ * @returns {String}
+ */
+export function extendLeft(string, pattern, length) {
+	if (typeof string !== 'string') throw new TypeError();
+
+	return _extendLeft.call(string, pattern, length);
 }
 
 /**
