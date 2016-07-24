@@ -1,6 +1,7 @@
 import _assert from 'assert';
 
 import URIComponent from '../source/URIComponent';
+import * as component from '../source/URIComponent';
 
 
 
@@ -34,9 +35,40 @@ describe('URIComponent', () => {
 	});
 
 	describe('#constructor', () => {
-		it("should require a valid component type as first argument");
-		it("should accept a string as optional second argument");
-		it("should create a new instance");
+		it("should require a valid component type as first argument", () => {
+			_assert.throws(() => new URIComponent(), TypeError);
+			_assert.throws(() => new URIComponent(null), TypeError);
+			_assert.throws(() => new URIComponent(true), TypeError);
+			_assert.throws(() => new URIComponent(0), TypeError);
+			_assert.throws(() => new URIComponent(8), TypeError);
+			_assert.throws(() => new URIComponent("1"), TypeError);
+			_assert.throws(() => new URIComponent(/^1$/), TypeError);
+			_assert.throws(() => new URIComponent(() => 1), TypeError);
+			_assert.throws(() => new URIComponent({ "1" : 1 }), TypeError);
+			_assert.doesNotThrow(() => new URIComponent(component.TYPE_SCHEME));
+			_assert.doesNotThrow(() => new URIComponent(component.TYPE_USER));
+			_assert.doesNotThrow(() => new URIComponent(component.TYPE_NAME));
+			_assert.doesNotThrow(() => new URIComponent(component.TYPE_PORT));
+			_assert.doesNotThrow(() => new URIComponent(component.TYPE_PATH));
+			_assert.doesNotThrow(() => new URIComponent(component.TYPE_QUERY));
+			_assert.doesNotThrow(() => new URIComponent(component.TYPE_FRAGMENT));
+		});
+
+		it("should accept a string as optional second argument", () => {
+			_assert.throws(() => new URIComponent(component.TYPE_PATH, null), TypeError);
+			_assert.throws(() => new URIComponent(component.TYPE_PATH, true), TypeError);
+			_assert.throws(() => new URIComponent(component.TYPE_PATH, 1), TypeError);
+			_assert.doesNotThrow(() => new URIComponent(component.TYPE_PATH, ""));
+			_assert.doesNotThrow(() => new URIComponent(component.TYPE_PATH, "1"));
+			_assert.throws(() => new URIComponent(component.TYPE_PATH, /^1$/), TypeError);
+			_assert.throws(() => new URIComponent(component.TYPE_PATH, () => 1), TypeError);
+			_assert.throws(() => new URIComponent(component.TYPE_PATH, { "1" : 1 }), TypeError);
+		});
+
+		it("should create a new instance", () => {
+			_assert(new URIComponent(component.TYPE_SCHEME) instanceof URIComponent);
+			_assert(new URIComponent(component.TYPE_PATH, "1") instanceof URIComponent);
+		});
 	});
 
 	describe('#type', () => {
