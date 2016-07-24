@@ -127,3 +127,54 @@ describe('fromPctChar', () => {
 		_assert.equal(exstr.fromPctChar("%c3%bf"), "ÿ");
 	});
 });
+
+describe('u8CharCodeAt', () => {
+	it("should expect a string and an integer as arguments", () => {
+		_assert.throws(() => exstr.u8CharCodeAt(), TypeError);
+		_assert.throws(() => exstr.u8CharCodeAt("1"), TypeError);
+		_assert.throws(() => exstr.u8CharCodeAt(null, 0), TypeError);
+		_assert.throws(() => exstr.u8CharCodeAt(true, 0), TypeError);
+		_assert.throws(() => exstr.u8CharCodeAt(1, 0), TypeError);
+		_assert.doesNotThrow(() => exstr.u8CharCodeAt("1", 0));
+		_assert.throws(() => exstr.u8CharCodeAt(() => 1, 0), TypeError);
+		_assert.throws(() => exstr.u8CharCodeAt({ "1" : 1 }, 0), TypeError);
+		_assert.throws(() => exstr.u8CharCodeAt("1"), TypeError);
+		_assert.throws(() => exstr.u8CharCodeAt("1", null), TypeError);
+		_assert.throws(() => exstr.u8CharCodeAt("1", true), TypeError);
+		_assert.throws(() => exstr.u8CharCodeAt("1", 0.1), TypeError);
+		_assert.throws(() => exstr.u8CharCodeAt("1", NaN), TypeError);
+		_assert.throws(() => exstr.u8CharCodeAt("1", "1"), TypeError);
+		_assert.throws(() => exstr.u8CharCodeAt("1", () => 1), TypeError);
+		_assert.throws(() => exstr.u8CharCodeAt("1", { "1" : 1 }), TypeError);
+	});
+
+	it("should only accept index arguments that are within the length of string", () => {
+		_assert.throws(() => exstr.u8CharCodeAt("string", -1), RangeError);
+		_assert.throws(() => exstr.u8CharCodeAt("string", 6), RangeError);
+		_assert.doesNotThrow(() => exstr.u8CharCodeAt("string", 0));
+		_assert.doesNotThrow(() => exstr.u8CharCodeAt("string", 5));
+	});
+
+	it("should return an array of utf8 character codes for the character at index", () => {
+		_assert.deepEqual(exstr.u8CharCodeAt(" ", 0), [ 0x20 ]);
+		_assert.deepEqual(exstr.u8CharCodeAt("~", 0), [ 0x7e ]);
+		_assert.deepEqual(exstr.u8CharCodeAt('¡', 0), [ 0xc2, 0xa1 ]);
+		_assert.deepEqual(exstr.u8CharCodeAt('ÿ', 0), [ 0xc3, 0xbf ]);
+		_assert.deepEqual(exstr.u8CharCodeAt('߿', 0), [ 0xdf, 0xbf ]);
+		_assert.deepEqual(exstr.u8CharCodeAt('ࠀ', 0), [ 0xe0, 0xa0, 0x80 ]);
+		_assert.deepEqual(exstr.u8CharCodeAt('￿', 0), [ 0xef, 0xbf, 0xbf ]);
+		_assert.deepEqual(exstr.u8CharCodeAt('𐀀', 0), [ 0xf0, 0x90, 0x80, 0x80 ]);
+		_assert.deepEqual(exstr.u8CharCodeAt('􀏿', 0), [ 0xf4, 0x80, 0x8f, 0xbf ]);
+	});
+
+	it("should return the inverse of fromUtf8CharCode", () => {
+		_assert.deepEqual(exstr.u8CharCodeAt(exstr.fromUtf8CharCode([ 0b00000000 ]), 0), [ 0b00000000 ]);
+		_assert.deepEqual(exstr.u8CharCodeAt(exstr.fromUtf8CharCode([ 0b01111111 ]), 0), [ 0b01111111 ]);
+		_assert.deepEqual(exstr.u8CharCodeAt(exstr.fromUtf8CharCode([ 0b11000010, 0b10000000 ]), 0), [ 0b11000010, 0b10000000 ]);
+		_assert.deepEqual(exstr.u8CharCodeAt(exstr.fromUtf8CharCode([ 0b11011111, 0b10111111 ]), 0), [ 0b11011111, 0b10111111 ]);
+		_assert.deepEqual(exstr.u8CharCodeAt(exstr.fromUtf8CharCode([ 0b11100000, 0b10100000, 0b10000000 ]), 0), [ 0b11100000, 0b10100000, 0b10000000 ]);
+		_assert.deepEqual(exstr.u8CharCodeAt(exstr.fromUtf8CharCode([ 0b11101111, 0b10111111, 0b10111111 ]), 0), [ 0b11101111, 0b10111111, 0b10111111 ]);
+		_assert.deepEqual(exstr.u8CharCodeAt(exstr.fromUtf8CharCode([ 0b11110000, 0b10010000, 0b10000000, 0b10000000 ]), 0), [ 0b11110000, 0b10010000, 0b10000000, 0b10000000 ]);
+ 		_assert.deepEqual(exstr.u8CharCodeAt(exstr.fromUtf8CharCode([ 0b11110100, 0b10001111, 0b10111111, 0b10111111 ]), 0), [ 0b11110100, 0b10001111, 0b10111111, 0b10111111 ]);
+	});
+});
