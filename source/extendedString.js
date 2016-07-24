@@ -43,6 +43,12 @@ export function fromUtf8CharCode(char) {
 			code |= (nN & 0b00111111) << (f - j) * 6;
 		}
 
+		if (
+			code < 0x000080 || code > 0x10ffff ||
+			f === 2 && code < 0x000800 ||
+			f === 3 && code < 0x010000
+		) throw new Error();
+
 		i += f;
 
 		if (code < 0x010000) res += String.fromCharCode(code);
