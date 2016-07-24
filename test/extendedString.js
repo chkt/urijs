@@ -227,3 +227,54 @@ describe('u8CharCodeAt', () => {
  		_assert.deepEqual(exstr.u8CharCodeAt(exstr.fromUtf8CharCode([ 0b11110100, 0b10001111, 0b10111111, 0b10111111 ]), 0), [ 0b11110100, 0b10001111, 0b10111111, 0b10111111 ]);
 	});
 });
+
+describe('pctCharAt', () => {
+	it("should expect a string and an integer as arguments", () => {
+		_assert.throws(() => exstr.pctCharAt(), TypeError);
+		_assert.throws(() => exstr.pctCharAt("1"), TypeError);
+		_assert.throws(() => exstr.pctCharAt(null, 0), TypeError);
+		_assert.throws(() => exstr.pctCharAt(true, 0), TypeError);
+		_assert.throws(() => exstr.pctCharAt(1, 0), TypeError);
+		_assert.doesNotThrow(() => exstr.pctCharAt("1", 0));
+		_assert.throws(() => exstr.pctCharAt(() => 1, 0), TypeError);
+		_assert.throws(() => exstr.pctCharAt({ "1" : 1 }, 0), TypeError);
+		_assert.throws(() => exstr.pctCharAt("1"), TypeError);
+		_assert.throws(() => exstr.pctCharAt("1", null), TypeError);
+		_assert.throws(() => exstr.pctCharAt("1", true), TypeError);
+		_assert.throws(() => exstr.pctCharAt("1", 0.1), TypeError);
+		_assert.throws(() => exstr.pctCharAt("1", NaN), TypeError);
+		_assert.throws(() => exstr.pctCharAt("1", "1"), TypeError);
+		_assert.throws(() => exstr.pctCharAt("1", () => 1), TypeError);
+		_assert.throws(() => exstr.pctCharAt("1", { "1" : 1 }), TypeError);
+	});
+
+	it("should only accept index arguments within the length of string", () => {
+		_assert.throws(() => exstr.pctCharAt("string", -1), RangeError);
+		_assert.throws(() => exstr.pctCharAt("string", 6), RangeError);
+		_assert.doesNotThrow(() => exstr.pctCharAt("string", 0));
+		_assert.doesNotThrow(() => exstr.pctCharAt("string", 5));
+	});
+
+	it("should return a string of percent encoded utf8 code points", () => {
+		_assert.deepEqual(exstr.pctCharAt(" ", 0), "%20");
+		_assert.deepEqual(exstr.pctCharAt("~", 0), "%7E");
+		_assert.deepEqual(exstr.pctCharAt('¡', 0), "%C2%A1");
+		_assert.deepEqual(exstr.pctCharAt('ÿ', 0), "%C3%BF");
+		_assert.deepEqual(exstr.pctCharAt('߿', 0), "%DF%BF");
+		_assert.deepEqual(exstr.pctCharAt('ࠀ', 0), "%E0%A0%80");
+		_assert.deepEqual(exstr.pctCharAt('￿', 0), "%EF%BF%BF");
+		_assert.deepEqual(exstr.pctCharAt('𐀀', 0), "%F0%90%80%80");
+		_assert.deepEqual(exstr.pctCharAt('􀏿', 0), "%F4%80%8F%BF");
+	});
+
+	it("should return the inverse of fromPctChar", () => {
+		_assert.deepEqual(exstr.pctCharAt(exstr.fromPctChar("%00"), 0), "%00");
+		_assert.deepEqual(exstr.pctCharAt(exstr.fromPctChar("%7F"), 0), "%7F");
+		_assert.deepEqual(exstr.pctCharAt(exstr.fromPctChar("%C2%80"), 0), "%C2%80");
+		_assert.deepEqual(exstr.pctCharAt(exstr.fromPctChar("%DF%BF"), 0), "%DF%BF");
+		_assert.deepEqual(exstr.pctCharAt(exstr.fromPctChar("%E0%A0%80"), 0), "%E0%A0%80");
+		_assert.deepEqual(exstr.pctCharAt(exstr.fromPctChar("%EF%BF%BF"), 0), "%EF%BF%BF");
+		_assert.deepEqual(exstr.pctCharAt(exstr.fromPctChar("%F0%90%80%80"), 0), "%F0%90%80%80");
+		_assert.deepEqual(exstr.pctCharAt(exstr.fromPctChar("%F4%8F%BF%BF"), 0), "%F4%8F%BF%BF");
+	});
+});
