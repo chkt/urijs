@@ -1,4 +1,54 @@
 /**
+ * Returns an Array of utf-8 encoded character codes of this at index
+ * @param {Int} index The character index
+ * @returns {Array}
+ * @throws {TypeError} if index is not an Int
+ * @throws {RangeError} if index is not in range
+ * @throws {Error} if the character at index is invalid
+ */
+function _u8CharCodeAt(index) {
+	if (!Number.isSafeInteger(index)) throw new TypeError();
+
+	const string = String(this);
+
+	if (index < 0 || index >= string.length) throw new RangeError();
+
+	let code = string.charCodeAt(index);
+
+	if (code < 0x0080) return [ code ];     //0000-0000-0xxx-xxxx
+
+	if ((code & 0xF800) === 0xD800) {       //1101-1xxx-xxxx-xxxx
+		let lead, trail;
+
+		if ((code & 0x0400) === 0x0400) {   //1101-11xx-xxxx-xxxx
+			lead = string.charCodeAt(index - 1);
+			trail = code;
+
+			if ((lead & 0xFC00) != 0xD800) throw new Error();
+		}
+		else {
+			lead = code;
+			trail = string.charCodeAt(index + 1);
+		}
+
+		if ((trail & 0xDC00) === 0xDC00) code = ((lead & ~0xD800) << 10 | (trail & ~0xDC00)) + 0x010000;
+	}
+
+	const res = [];
+	let mark, mf, ff, o;
+
+	if (code < 0x000800)      mark = 0x00C0, mf = 0x0007C0, ff = 0x00003F, o = 6;
+	else if (code < 0x010000) mark = 0x00E0, mf = 0x00F000, ff = 0x000FC0, o = 12;
+	else                      mark = 0x00F0, mf = 0x1C0000, ff = 0x03F000, o = 18;
+
+	res.push((mark + ((code & mf) >>> o)));
+
+	for (o -= 6; ff !== 0; ff >>>= 6, o -= 6) res.push((0x0080 + ((code & ff) >> o)));
+
+	return res;
+}
+
+/**
  * Returns an instance created from utf-8 encoded character codes
  * @param {Uint[]} char
  * @returns {String}
@@ -80,4 +130,17 @@ export function fromPctChar(char) {
 	for (var i = str.length - 2; i > -1; i -= 3) code.unshift(Number.parseInt("0x" + str.substr(i, 2)));
 
 	return fromUtf8CharCode(code);
+}
+
+/**
+ * Returns an Array of utf-8 encoded character codes of string at index
+ * @param {String} string The source string
+ * @param {Int} index The character index
+ * @returns {Array}
+ * @throws {TypeError} if string is not a string
+ */
+export function u8CharCodeAt(string, index) {
+	if (typeof string !== 'string') throw new TypeError();
+
+	return _u8CharCodeAt.call(string, index);
 }
