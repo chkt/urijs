@@ -72,6 +72,17 @@ function _u8CharCodeAt(index) {
 }
 
 /**
+ * Returns a string representing the percent-encoded character of this at index
+ * @param {Int} index The character index
+ * @returns {String}
+ */
+function _pctCharAt(index) {
+	return _u8CharCodeAt.call(this, index)
+		.map((item, index, source) => _extendLeft.call(item.toString(16).toUpperCase(), "%00"))
+		.join('');
+}
+
+/**
  * Returns an instance created from utf-8 encoded character codes
  * @param {Uint[]} char
  * @returns {String}
@@ -179,4 +190,16 @@ export function u8CharCodeAt(string, index) {
 	if (typeof string !== 'string') throw new TypeError();
 
 	return _u8CharCodeAt.call(string, index);
+}
+
+/**
+ * Returns a string representing the percent-encoded character of string at index
+ * @param {String} string The source string
+ * @param {Int} index The character index
+ * @returns {String}
+ */
+export function pctCharAt(string, index) {
+	if (typeof string !== 'string') throw new TypeError();
+
+	return _pctCharAt.call(string, index);
 }
