@@ -128,6 +128,55 @@ describe('fromPctChar', () => {
 	});
 });
 
+describe('extendLeft', () => {
+	it("should expect a string as first and a nonempty string as second argument", () => {
+		_assert.throws(() => exstr.extendLeft(), TypeError);
+		_assert.throws(() => exstr.extendLeft(null, "1"), TypeError);
+		_assert.throws(() => exstr.extendLeft(true, "1"), TypeError);
+		_assert.throws(() => exstr.extendLeft(1, "1"), TypeError);
+		_assert.doesNotThrow(() => exstr.extendLeft("", "1"));
+		_assert.doesNotThrow(() => exstr.extendLeft("1", "1"));
+		_assert.throws(() => exstr.extendLeft(/^1$/, "1"), TypeError);
+		_assert.throws(() => exstr.extendLeft(() => 1, "1"), TypeError);
+		_assert.throws(() => exstr.extendLeft({ "1" : 1 }, "1"), TypeError);
+		_assert.throws(() => exstr.extendLeft("1", null), TypeError);
+		_assert.throws(() => exstr.extendLeft("1", true), TypeError);
+		_assert.throws(() => exstr.extendLeft("1", 1), TypeError);
+		_assert.throws(() => exstr.extendLeft("1", ""), TypeError);
+		_assert.throws(() => exstr.extendLeft("1", /^1$/), TypeError);
+		_assert.throws(() => exstr.extendLeft("1", () => 1), TypeError);
+		_assert.throws(() => exstr.extendLeft("1", { "1" : 1 }), TypeError);
+	});
+
+	it("should optionally accept a positive integer as third argument", () => {
+		_assert.throws(() => exstr.extendLeft("1", "1", null), TypeError);
+		_assert.throws(() => exstr.extendLeft("1", "1", true), TypeError);
+		_assert.throws(() => exstr.extendLeft("1", "1", -1), TypeError);
+		_assert.doesNotThrow(() => exstr.extendLeft("1", "1", 0));
+		_assert.doesNotThrow(() => exstr.extendLeft("1", "1", 1));
+		_assert.doesNotThrow(() => exstr.extendLeft("1", "1", 1024 * 1024));
+		_assert.throws(() => exstr.extendLeft("1", "1", 0.1), TypeError);
+		_assert.throws(() => exstr.extendLeft("1", "1", Number.NaN), TypeError);
+		_assert.throws(() => exstr.extendLeft("1", "1", "1"), TypeError);
+		_assert.throws(() => exstr.extendLeft("1", "1", /^1$/), TypeError);
+		_assert.throws(() => exstr.extendLeft("1", "1", () => 1), TypeError);
+		_assert.throws(() => exstr.extendLeft("1", "1", { "1" : 1 }), TypeError);
+	});
+
+	it("should return a string that is the first string padded by the second string", () => {
+		_assert.strictEqual(exstr.extendLeft("", "0x00"), "0x00");
+		_assert.strictEqual(exstr.extendLeft("1", "0x00"), "0x01");
+		_assert.strictEqual(exstr.extendLeft("1", "2"), "1");
+		_assert.strictEqual(exstr.extendLeft("12", "1"), "12");
+		_assert.strictEqual(exstr.extendLeft("12", "1", 2), "12");
+		_assert.strictEqual(exstr.extendLeft("12", "1", 3), "112");
+		_assert.strictEqual(exstr.extendLeft("", "123", 1), "1");
+		_assert.strictEqual(exstr.extendLeft("", "123", 2), "12");
+		_assert.strictEqual(exstr.extendLeft("", "123", 3), "123");
+		_assert.strictEqual(exstr.extendLeft("", "123", 4), "1231");
+	});
+});
+
 describe('u8CharCodeAt', () => {
 	it("should expect a string and an integer as arguments", () => {
 		_assert.throws(() => exstr.u8CharCodeAt(), TypeError);
