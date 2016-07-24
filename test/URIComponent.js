@@ -72,8 +72,20 @@ describe('URIComponent', () => {
 	});
 
 	describe('#type', () => {
-		it("should get the component type of the instance");
-		it("should not be settable");
+		it("should get the component type of the instance", () => {
+			_assert.strictEqual(new URIComponent(component.TYPE_SCHEME).type, component.TYPE_SCHEME);
+			_assert.strictEqual(new URIComponent(component.TYPE_USER).type, component.TYPE_USER);
+			_assert.strictEqual(new URIComponent(component.TYPE_NAME).type, component.TYPE_NAME);
+			_assert.strictEqual(new URIComponent(component.TYPE_PORT).type, component.TYPE_PORT);
+			_assert.strictEqual(new URIComponent(component.TYPE_PATH).type, component.TYPE_PATH);
+			_assert.strictEqual(new URIComponent(component.TYPE_QUERY).type, component.TYPE_QUERY);
+			_assert.strictEqual(new URIComponent(component.TYPE_FRAGMENT).type, component.TYPE_FRAGMENT);
+		});
+		it("should not be settable", () => {
+			const ins = new URIComponent(component.TYPE_SCHEME);
+
+			_assert.throws(() => ins.type = component.TYPE_SCHEME);
+		});
 	});
 
 	describe('#string', () => {
