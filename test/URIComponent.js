@@ -391,8 +391,25 @@ describe('URIComponent', () => {
 	});
 
 	describe("#empty", () => {
-		it("should get the empty state of the component");
-		it("should not be settable");
+		it("should get the empty state of the component", () => {
+			const ins = new URIComponent(component.TYPE_PATH);
+
+			_assert.strictEqual(ins.empty, true);
+
+			ins.string = "1";
+
+			_assert.strictEqual(ins.empty, false);
+
+			ins.string = "";
+
+			_assert.strictEqual(ins.empty, true);
+		});
+
+		it("should not be settable", () => {
+			const ins = new URIComponent(component.TYPE_PATH);
+
+			_assert.throws(() => ins.empty = true, Error);
+		});
 	});
 
 	describe('#define', () => {
