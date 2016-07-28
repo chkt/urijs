@@ -83,6 +83,27 @@ function _pctCharAt(index) {
 }
 
 /**
+ * Returns an Array of utf-8 encoded character codes of this
+ * @returns {Array}
+ * @private
+ */
+function _toU8CharCodes() {
+	const string = String(this);
+	let res = [];
+
+	for (let i = 0, l = string.length; i < l; i += 1) {
+		const code = string.charCodeAt(i);
+
+		if ((code & 0xDC00) === 0xDC00) continue;
+
+		res = res.concat(_u8CharCodeAt.call(string, i));
+	}
+
+	return res;
+}
+
+
+/**
  * Returns an instance created from utf-8 encoded character codes
  * @param {Uint[]} char
  * @returns {String}
@@ -202,4 +223,17 @@ export function pctCharAt(string, index) {
 	if (typeof string !== 'string') throw new TypeError();
 
 	return _pctCharAt.call(string, index);
+}
+
+
+/**
+ * Returns an Array of utf-8 encoded character codes of string
+ * @param {String} string - The source string
+ * @returns {Array}
+ * @throws {TypeError} if string is not a string
+ */
+export function toU8CharCodes(string) {
+	if (typeof string !== 'string') throw new TypeError();
+
+	return _toU8CharCodes.call(string);
 }
