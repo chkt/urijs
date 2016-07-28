@@ -3,6 +3,58 @@ import _assert from 'assert';
 import URIComponent from '../source/URIComponent';
 import * as component from '../source/URIComponent';
 
+import * as exstr from '../source/extendedString';
+import generator from '../source/characterGenerator';
+import * as gen from '../source/characterGenerator';
+
+
+const CTRL_CHARS =
+	"\u0000\u0001\u0002\u0003\u0004\u0005\u0006\u0007\u0008\u0009\u000a\u000b\u000c\u000d\u000e\u000f" +
+	"\u0010\u0011\u0012\u0013\u0014\u0015\u0016\u0017\u0018\u0019\u001a\u001b\u001c\u001d\u001e\u001f" +
+	"\u007f";
+
+const UNICODE_CHARS = "¡ÿ";
+
+
+
+function _testChars(ins, gen) {
+	for (let item in gen) {
+		if (item.valid) _assert.doesNotThrow(() => ins.string = item.string);
+		else _assert.throws(() => ins.string = item.string, Error);
+	}
+}
+
+function _testSetDecode(ins, lower = false) {
+	const decoded = "-.0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ_abcdefghijklmnopqrstuvwxyz~";
+	const encoded = exstr.toPctChars(decoded);
+
+	ins.string = encoded;
+
+	_assert.strictEqual(ins.string, lower ? decoded.toLowerCase() : decoded);
+}
+
+function _testSetPreserve(ins, string) {
+	ins.string = string;
+
+	_assert.strictEqual(ins.string, string);
+}
+
+function _testSetEncode(ins, string) {
+	const encoded = exstr.toPctChars(string);
+
+	ins.string = string;
+
+	_assert.strictEqual(ins.string, encoded);
+}
+
+function _testSetEntity(ins) {
+	const encoded = '%8A%8B%8C%8D%8E%8F%A0%B0%C0%D0%E0%F0';
+
+	ins.string = encoded.toLowerCase();
+
+	_assert.strictEqual(ins.string, encoded);
+}
+
 
 
 describe('URIComponent', () => {
@@ -141,22 +193,196 @@ describe('URIComponent', () => {
 	});
 
 	describe('#string', () => {
-		it("should get the encoded component");
-		it("should set the encoded component");
-		it("should only set valid scheme components when component type is scheme");
-		it("should correctly encode scheme components when component type is scheme");
-		it("should only set valid user components when component type is user");
-		it("should correctly encode user components when component type is user");
-		it("should only set valid name components when component type is name");
-		it("should correctly encode name components when component type is name");
-		it("should only set valid port components when component type is port");
-		it("should correctly encode port components when component type is port");
-		it("should only set valid path components when component type is path");
-		it("should correctly encode path components when component type is path");
-		it("should only set valid query components when component type is query");
-		it("should correctly encode query component when component type is query");
-		it("should only set valid fragment components when component type is fragment");
-		it("should correctly encode fragment components when component type is fragment");
+		it("should get the encoded component", () => {
+			const ins = new URIComponent(component.TYPE_PATH, "1");
+
+			_assert.strictEqual(ins.string, "1");
+		});
+
+		it("should set the encoded component", () => {
+			const ins = new URIComponent(component.TYPE_PATH);
+
+			_assert.strictEqual(ins.string, "");
+
+			ins.string = "1";
+
+			_assert.strictEqual(ins.string, "1");
+		});
+
+		it("should allow setting empty components when component type is scheme", () => {
+			const ins = new URIComponent(component.TYPE_SCHEME);
+
+			_assert.doesNotThrow(() => ins.string = "");
+		});
+
+		it("should only set valid scheme components when component type is scheme", () => {
+			const ins = new URIComponent(component.TYPE_SCHEME);
+			const valid = [[
+				gen.FLAG_ALPHA
+			], [
+				gen.FLAG_ALPHA,
+				gen.FLAG_DIGIT,
+				gen.PLUS,
+				gen.HYPH,
+				gen.DOT
+			]];
+
+			_testChars(ins, generator(valid, 0.01, 1, 3));
+		});
+
+		it("should correctly encode scheme components when component type is scheme", () => {
+			const ins = new URIComponent(component.TYPE_SCHEME);
+			const str = 'abcdefghijklmnopqrstuvwxyz';
+
+			ins.string = str.toUpperCase();
+
+			_assert.strictEqual(ins.string, str);
+		});
+
+		it("should allow setting empty components when component type is user", () => {
+			const ins = new URIComponent(component.TYPE_USER);
+
+			_assert.doesNotThrow(() => ins.string = "");
+		})
+
+		it("should only set valid user components when component type is user", () => {
+			const ins = new URIComponent(component.TYPE_USER);
+			const valid = [[
+				gen.FLAG_ENCODE,
+				gen.FLAG_PRESERVE,
+				gen.FLAG_DELIMITER
+			]];
+
+			_testChars(ins, generator(valid, 0.1, 1, 2));
+		});
+
+		it("should correctly encode user components when component type is user", () => {
+			const ins = new URIComponent(component.TYPE_USER);
+
+			_testSetDecode(ins);
+			_testSetPreserve(ins, "!%21$%24&%26'%27(%28)%29*%2A+%2B,%2C:%3A;%3B=%3D");
+			_testSetEncode(ins, ` "#/<>?@[\\]^\`{|}${ CTRL_CHARS }${ UNICODE_CHARS }`);
+			_testSetEntity(ins);
+		});
+
+		it("should allow setting empty components when component type is name", () => {
+			const ins = new URIComponent(component.TYPE_NAME);
+
+			_assert.doesNotThrow(() => ins.string = "");
+		});
+
+		it("should only set valid name components when component type is name", () => {
+			const ins = new URIComponent(component.TYPE_NAME);
+			const valid = [[
+				gen.FLAG_ENCODE,
+				gen.FLAG_PRESERVE,
+				gen.FLAG_DELIMITER
+			]];
+
+			_testChars(ins, generator(valid, 0.1, 1, 2));
+		});
+
+		it("should correctly encode name components when component type is name", () => {
+			const ins = new URIComponent(component.TYPE_NAME);
+
+			_testSetDecode(ins, true);
+			_testSetPreserve(ins, "!%21$%24&%26'%27(%28)%29*%2A+%2B,%2C;%3B=%3D");
+			_testSetEncode(ins, ` "#/:<>?@[\\]^\`{|}${ CTRL_CHARS }${ UNICODE_CHARS }`);
+			_testSetEntity(ins);
+		});
+
+		it("should allow setting empty components when component type is port", () => {
+			const ins = new URIComponent(component.TYPE_PORT);
+
+			_assert.doesNotThrow(() => ins.string = "");
+		});
+
+		it("should only set valid port components when component type is port", () => {
+			const ins = new URIComponent(component.TYPE_PORT);
+			const valid = [[
+				gen.FLAG_DIGIT
+			]];
+
+			_testChars(ins, generator(valid, 0.1, 1, 2));
+		});
+
+		it("should allow setting empty components when component type is path", () => {
+			const ins = new URIComponent(component.TYPE_PATH);
+
+			_assert.doesNotThrow(() => ins.string = "");
+		});
+
+		it("should only set valid path components when component type is path", () => {
+			const ins = new URIComponent(component.TYPE_PATH);
+			const valid = [[
+				gen.FLAG_ENCODE,
+				gen.FLAG_PRESERVE,
+				gen.FLAG_DELIMITER
+			]];
+
+			_testChars(ins, generator(valid, 0.1, 1, 2));
+		});
+
+		it("should correctly encode path components when component type is path", () => {
+			const ins = new URIComponent(component.TYPE_PATH);
+
+			_testSetDecode(ins);
+			_testSetPreserve(ins, "!%21$%24&%26'%27(%28)%29*%2A+%2B,%2C/%2F:%3A;%3B=%3D@%40");
+			_testSetEncode(ins, ` "#<>?[\\]^\`{|}${ CTRL_CHARS }${ UNICODE_CHARS }`);
+			_testSetEntity(ins);
+		});
+
+		it("should allow setting empty components when component type is query", () => {
+			const ins = new URIComponent(component.TYPE_QUERY);
+
+			_assert.doesNotThrow(() => ins.string = "");
+		});
+
+		it("should only set valid query components when component type is query", () => {
+			const ins = new URIComponent(component.TYPE_QUERY);
+			const valid = [[
+				gen.FLAG_ENCODE,
+				gen.FLAG_PRESERVE,
+				gen.FLAG_DELIMITER
+			]];
+
+			_testChars(ins, generator(valid, 0.1, 1, 2));
+		});
+
+		it("should correctly encode query component when component type is query", () => {
+			const ins = new URIComponent(component.TYPE_QUERY);
+
+			_testSetDecode(ins);
+			_testSetPreserve(ins, "!%21$%24&%26'%27(%28)%29*%2A+%2B,%2C/%2F:%3A;%3B=%3D?%3F@%40");
+			_testSetEncode(ins, ` "#<>[\\]^\`{|}${ CTRL_CHARS }${ UNICODE_CHARS}`);
+			_testSetEntity(ins);
+		});
+
+		it("should allow setting empty components when component type is fragment", () => {
+			const ins = new URIComponent(component.TYPE_FRAGMENT);
+
+			_assert.doesNotThrow(() => ins.string = "");
+		});
+
+		it("should only set valid fragment components when component type is fragment", () => {
+			const ins = new URIComponent(component.TYPE_FRAGMENT);
+			const valid = [[
+				gen.FLAG_ENCODE,
+				gen.FLAG_PRESERVE,
+				gen.FLAG_DELIMITER
+			]];
+
+			_testChars(ins, generator(valid, 0.1, 1, 2));
+		});
+
+		it("should correctly encode fragment components when component type is fragment", () => {
+			const ins = new URIComponent(component.TYPE_FRAGMENT);
+
+			_testSetDecode(ins);
+			_testSetPreserve(ins, "!%21$%24&%26'%27(%28)%29*%2A+%2B,%2C/%2F:%3A;%3B=%3D?%3F@%40");
+			_testSetEncode(ins, ` "#<>[\\]^\`{|}${ CTRL_CHARS}${ UNICODE_CHARS }`);
+			_testSetEntity(ins);
+		});
 	});
 
 	describe('#stringDecoded', () => {
