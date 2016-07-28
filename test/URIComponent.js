@@ -134,8 +134,40 @@ describe('URIComponent', () => {
 	});
 
 	describe(".isEQ", () => {
-		it("should require URIComponents as first and second argument");
-		it("should return true if both URIComponents have the same type and encoded string");
+		it("should require URIComponents as first and second argument", () => {
+			const ins = new URIComponent(component.TYPE_SCHEME);
+
+			_assert.throws(() => URIComponent.isEQ(), TypeError);
+			_assert.throws(() => URIComponent.isEQ(null, ins), TypeError);
+			_assert.throws(() => URIComponent.isEQ(true, ins), TypeError);
+			_assert.throws(() => URIComponent.isEQ(1, ins), TypeError);
+			_assert.throws(() => URIComponent.isEQ("1", ins), TypeError);
+			_assert.throws(() => URIComponent.isEQ(/^1$/, ins), TypeError);
+			_assert.throws(() => URIComponent.isEQ(() => 1, ins), TypeError);
+			_assert.throws(() => URIComponent.isEQ({ "1" : 1 }, ins), TypeError);
+			_assert.throws(() => URIComponent.isEQ([ 1 ], ins), TypeError);
+			_assert.doesNotThrow(() => URIComponent.isEQ(ins, ins));
+			_assert.throws(() => URIComponent.isEQ(ins, null), TypeError);
+			_assert.throws(() => URIComponent.isEQ(ins, true), TypeError);
+			_assert.throws(() => URIComponent.isEQ(ins, 1), TypeError);
+			_assert.throws(() => URIComponent.isEQ(ins, "1"), TypeError);
+			_assert.throws(() => URIComponent.isEQ(ins, /^1$/), TypeError);
+			_assert.throws(() => URIComponent.isEQ(ins, () => 1), TypeError);
+			_assert.throws(() => URIComponent.isEQ(ins, { "1" : 1 }), TypeError);
+			_assert.throws(() => URIComponent.isEQ(ins, [ 1 ]), TypeError);
+		});
+
+		it("should return true if both URIComponents have the same type and encoded string", () => {
+			const a = new URIComponent(component.TYPE_SCHEME, "a");
+			const b = new URIComponent(component.TYPE_PATH, "a");
+			const c = new URIComponent(component.TYPE_PATH, "b");
+			const d = new URIComponent(component.TYPE_PATH, "b");
+
+			_assert(!URIComponent.isEQ(a, b));
+			_assert(!URIComponent.isEQ(b, c));
+			_assert(!URIComponent.isEQ(b, d));
+			_assert(URIComponent.isEQ(c, d));
+		});
 	});
 
 	describe('#constructor', () => {
@@ -427,5 +459,6 @@ describe('URIComponent', () => {
 
 	describe('#toString', () => {
 		it("should return the encoded component");
+		it("should return the same as #string")
 	});
 });
