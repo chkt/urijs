@@ -102,6 +102,17 @@ function _toU8CharCodes() {
 	return res;
 }
 
+/**
+ * Returns a string representing the percent-encoded characters of this
+ * @returns {String}
+ * @private
+ */
+function _toPctChars() {
+	return _toU8CharCodes.call(this)
+		.map((item, index, source) => _extendLeft.call(item.toString(16).toUpperCase(), '%00'))
+		.join('');
+}
+
 
 /**
  * Returns an instance created from utf-8 encoded character codes
@@ -236,4 +247,16 @@ export function toU8CharCodes(string) {
 	if (typeof string !== 'string') throw new TypeError();
 
 	return _toU8CharCodes.call(string);
+}
+
+/**
+ * Returns a string representing the percent-encoded characters of strings
+ * @param {String} string - The source string
+ * @returns {String}
+ * @throws {TypeError} if string is not a string
+ */
+export function toPctChars(string) {
+	if (typeof string !== 'string') throw new TypeError();
+
+	return _toPctChars.call(string);
 }
