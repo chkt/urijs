@@ -307,3 +307,32 @@ describe('toU8CharCodes', () => {
 		_assert.strictEqual(exstr.fromUtf8CharCode(exstr.toU8CharCodes('¡ÿ~')), '¡ÿ~');
 	});
 });
+
+describe('toPctChars', () => {
+	it("should expect a string a sole argument", () => {
+		_assert.throws(() => exstr.toU8CharCodes(), TypeError);
+		_assert.throws(() => exstr.toU8CharCodes(null), TypeError);
+		_assert.throws(() => exstr.toU8CharCodes(true), TypeError);
+		_assert.doesNotThrow(() => exstr.toU8CharCodes(""));
+		_assert.doesNotThrow(() => exstr.toU8CharCodes("1"));
+		_assert.throws(() => exstr.toU8CharCodes(1), TypeError);
+		_assert.throws(() => exstr.toU8CharCodes(() => 1), TypeError);
+		_assert.throws(() => exstr.toU8CharCodes({ "1" : 1 }), TypeError);
+	});
+
+	it("should return a string of percent encoded utf8 characters", () => {
+		_assert.strictEqual(exstr.toPctChars("¡ÿ𐀀~"), "%C2%A1%C3%BF%F0%90%80%80%7E");
+	});
+
+	it("should return the inverse of fromPctChar", () => {
+		_assert.strictEqual(exstr.fromPctChar(exstr.toPctChars(' ')), ' ');
+		_assert.strictEqual(exstr.fromPctChar(exstr.toPctChars('~')), '~');
+		_assert.strictEqual(exstr.fromPctChar(exstr.toPctChars('¡')), '¡');
+		_assert.strictEqual(exstr.fromPctChar(exstr.toPctChars('ÿ')), 'ÿ');
+		_assert.strictEqual(exstr.fromPctChar(exstr.toPctChars('߿')), '߿');
+		_assert.strictEqual(exstr.fromPctChar(exstr.toPctChars('ࠀ')), 'ࠀ');
+		_assert.strictEqual(exstr.fromPctChar(exstr.toPctChars('𐀀')), '𐀀');
+		_assert.strictEqual(exstr.fromPctChar(exstr.toPctChars('􀏿')), '􀏿');
+		_assert.strictEqual(exstr.fromPctChar(exstr.toPctChars('¡ÿ~')), '¡ÿ~');
+	});
+});
