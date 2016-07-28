@@ -127,10 +127,53 @@ describe('URIComponent', () => {
 	});
 
 	describe(".copy", () => {
-		it("should require an URIComponent as first argument");
-		it("should return an initialized URIComponent as a copy of the first argument");
-		it("should accept an URIComponent as optional second argument");
-		it("should return the second argument if provided");
+		it("should require an URIComponent as first argument", () => {
+			const ins = new URIComponent(component.TYPE_SCHEME);
+
+			_assert.throws(() => URIComponent.copy(), TypeError);
+			_assert.throws(() => URIComponent.copy(null), TypeError);
+			_assert.throws(() => URIComponent.copy(true), TypeError);
+			_assert.throws(() => URIComponent.copy(1), TypeError);
+			_assert.throws(() => URIComponent.copy("1"), TypeError);
+			_assert.throws(() => URIComponent.copy(/^1$/), TypeError);
+			_assert.throws(() => URIComponent.copy(() => 1), TypeError);
+			_assert.throws(() => URIComponent.copy({ "1" : 1 }), TypeError);
+			_assert.throws(() => URIComponent.copy([ 1 ]), TypeError);
+			_assert.doesNotThrow(() => URIComponent.copy(ins));
+		});
+
+		it("should return an initialized URIComponent as a copy of the first argument", () => {
+			const a = new URIComponent(component.TYPE_SCHEME, 'abc');
+			const b = URIComponent.copy(a);
+
+			_assert(a !== b);
+			_assert(a.type === b.type && a.string === b.string);
+		});
+
+		it("should accept an URIComponent as optional second argument", () => {
+			const a = new URIComponent(component.TYPE_SCHEME, 'abc');
+			const b = new URIComponent(component.TYPE_PATH, 'def');
+
+			_assert.throws(() => URIComponent.copy(a, null), TypeError);
+			_assert.throws(() => URIComponent.copy(a, true), TypeError);
+			_assert.throws(() => URIComponent.copy(a, 1), TypeError);
+			_assert.throws(() => URIComponent.copy(a, "1"), TypeError);
+			_assert.throws(() => URIComponent.copy(a, /^1$/), TypeError);
+			_assert.throws(() => URIComponent.copy(a, () => 1), TypeError);
+			_assert.throws(() => URIComponent.copy(a, { "1" : 1 }), TypeError);
+			_assert.throws(() => URIComponent.copy(a, [ 1 ]), TypeError);
+			_assert.doesNotThrow(() => URIComponent.copy(a, b));
+		});
+		it("should return the second argument if provided", () => {
+			const a = new URIComponent(component.TYPE_SCHEME, 'abc');
+			const b = new URIComponent(component.TYPE_PATH, 'def');
+			const c = URIComponent.copy(a, b);
+
+			_assert.notStrictEqual(a, b);
+			_assert.notStrictEqual(a, c);
+			_assert.strictEqual(b, c);
+			_assert(a.type === c.type && a.string === c.string);
+		});
 	});
 
 	describe(".isEQ", () => {
