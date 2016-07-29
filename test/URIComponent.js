@@ -488,10 +488,48 @@ describe('URIComponent', () => {
 	});
 
 	describe('#define', () => {
-		it("should reinitialize the instance");
-		it("should require a valid component type as first argument");
-		it("should accept a string as optional second argument");
-		it("should return the instance");
+		it("should require a valid component type as first argument", () => {
+			const ins = new URIComponent(component.TYPE_SCHEME);
+
+			_assert.throws(() => ins.define(), TypeError);
+			_assert.throws(() => ins.define(null), TypeError);
+			_assert.throws(() => ins.define(true), TypeError);
+			_assert.throws(() => ins.define(0), TypeError);
+			_assert.throws(() => ins.define(8), TypeError);
+			_assert.throws(() => ins.define("1"), TypeError);
+			_assert.throws(() => ins.define(/^1$/), TypeError);
+			_assert.throws(() => ins.define(() => 1), TypeError);
+			_assert.throws(() => ins.define({ "1" : 1 }), TypeError);
+			_assert.doesNotThrow(() => ins.define(component.TYPE_PATH));
+		});
+
+		it("should accept a string as optional second argument", () => {
+			const ins = new URIComponent(component.TYPE_SCHEME);
+
+			_assert.throws(() => ins.define(component.TYPE_PATH, null), TypeError);
+			_assert.throws(() => ins.define(component.TYPE_PATH, true), TypeError);
+			_assert.throws(() => ins.define(component.TYPE_PATH, 1), TypeError);
+			_assert.doesNotThrow(() => ins.define(component.TYPE_PATH, ""));
+			_assert.doesNotThrow(() => ins.define(component.TYPE_PATH, "1"));
+			_assert.throws(() => ins.define(component.TYPE_PATH, /^1$/), TypeError);
+			_assert.throws(() => ins.define(component.TYPE_PATH, () => 1), TypeError);
+			_assert.throws(() => ins.define(component.TYPE_PATH, { "1" : 1 }), TypeError);
+		});
+
+		it("should reinitialize the instance", () => {
+			const ins = new URIComponent(component.TYPE_SCHEME, "abc");
+			ins.define(component.TYPE_PATH, "def");
+
+			_assert.strictEqual(ins.type, component.TYPE_PATH);
+			_assert.strictEqual(ins.string, "def");
+		});
+
+		it("should return the instance", () => {
+			const a = new URIComponent(component.TYPE_SCHEME, "abc");
+			const b = a.define(component.TYPE_PATH, "def");
+
+			_assert.strictEqual(a, b);
+		});
 	});
 
 	describe('#copyOf', () => {
