@@ -537,7 +537,11 @@ describe('URIComponent', () => {
 	});
 
 	describe('#toString', () => {
-		it("should return the encoded component");
-		it("should return the same as #string")
+		it("should return the same as #string", () => {
+			const ins = new URIComponent(component.TYPE_PATH, "-.0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ_abcdefghijklmnopqrstuvwxyz~ \"#<>?[\\]^`{|}!%21$%24&%26'%27(%28)%29*%2A+%2B,%2C/%2F:%3A;%3B=%3D@%40%a0%b0%c0%d0%e0%f0");
+
+			_assert.strictEqual(ins.string, ins.toString());
+			_assert.strictEqual(ins.string, String(ins));
+		});
 	});
 });
