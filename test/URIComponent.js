@@ -495,9 +495,45 @@ describe('URIComponent', () => {
 	});
 
 	describe('#copyOf', () => {
-		it("should require a URIComponent as argument");
-		it("should reinitialize the instance as a copy of the argument");
-		it("should return the instance");
+		it("should require a URIComponent as argument", () => {
+			const ins = new URIComponent(component.TYPE_SCHEME);
+
+			_assert.throws(() => ins.copyOf(), TypeError);
+			_assert.throws(() => ins.copyOf(null), TypeError);
+			_assert.throws(() => ins.copyOf(true), TypeError);
+			_assert.throws(() => ins.copyOf(1), TypeError);
+			_assert.throws(() => ins.copyOf("1"), TypeError);
+			_assert.throws(() => ins.copyOf(/^1$/), TypeError);
+			_assert.throws(() => ins.copyOf(() => 1), TypeError);
+			_assert.throws(() => ins.copyOf({ "1" : 1 }), TypeError);
+			_assert.throws(() => ins.copyOf([ 1 ]), TypeError);
+			_assert.doesNotThrow(() => ins.copyOf(new URIComponent(component.TYPE_SCHEME)));
+		});
+
+		it("should reinitialize the instance as a copy of the argument", () => {
+			const a = new URIComponent(component.TYPE_SCHEME, "abc");
+			const b = new URIComponent(component.TYPE_PATH, "def");
+
+			_assert.notStrictEqual(a, b);
+			_assert.notStrictEqual(a.type, b.type);
+			_assert.notStrictEqual(a.string, b.string);
+
+			a.copyOf(b);
+
+			_assert.notStrictEqual(a, b);
+			_assert.strictEqual(a.type, b.type);
+			_assert.strictEqual(a.string, b.string);
+		});
+
+		it("should return the instance", () => {
+			const a = new URIComponent(component.TYPE_SCHEME, "abc");
+			const b = new URIComponent(component.TYPE_PATH, "def");
+			const c = a.copyOf(b);
+
+			_assert.notStrictEqual(a, b);
+			_assert.notStrictEqual(b, c);
+			_assert.strictEqual(a, c);
+		});
 	});
 
 	describe('#toString', () => {
