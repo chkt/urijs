@@ -55,6 +55,29 @@ function _testSetEntity(ins) {
 	_assert.strictEqual(ins.string, encoded);
 }
 
+function _testUri(string, parts) {
+	const { scheme, user, name, port, path, query, fragment } = parts;
+
+	const map = {
+		scheme : component.TYPE_SCHEME,
+		user : component.TYPE_USER,
+		name : component.TYPE_NAME,
+		port : component.TYPE_PORT,
+		path : component.TYPE_PATH,
+		query : component.TYPE_QUERY,
+		fragment : component.TYPE_FRAGMENT
+	};
+
+	for (let name in map) {
+		if (!(name in parts)) continue;
+
+		const part = parts[name];
+
+		if (part !== Error) _assert.strictEqual(URIComponent.URIString(map[name], string).string, part);
+		else _assert.throws(() => URIComponent.URIString(map[name], string), part);
+	}
+}
+
 
 
 describe('URIComponent', () => {
@@ -119,11 +142,459 @@ describe('URIComponent', () => {
 	});
 
 	describe('.URIString', () => {
-		it("should return an initialized instance");
-		it("should require a valid component type as first argument");
-		it("should require a valid uri string as second argument");
-		it("should accept an URIComponent as optional third argument");
-		it("should return the reinitialized third argument if provided");
+		it("should require a valid component type as first and a string as second argument", () => {
+			_assert.throws(() => URIComponent.URIString(), TypeError);
+			_assert.throws(() => URIComponent.URIString(null, ""), TypeError);
+			_assert.throws(() => URIComponent.URIString(true, ""), TypeError);
+			_assert.throws(() => URIComponent.URIString(0, ""), TypeError);
+			_assert.throws(() => URIComponent.URIString(8, ""), TypeError);
+			_assert.throws(() => URIComponent.URIString("1", ""), TypeError);
+			_assert.throws(() => URIComponent.URIString(/^1/, ""), TypeError);
+			_assert.throws(() => URIComponent.URIString(() => 1, ""), TypeError);
+			_assert.throws(() => URIComponent.URIString({ "1" : 1}, ""), TypeError);
+			_assert.throws(() => URIComponent.URIString(component.TYPE_SCHEME, null), TypeError);
+			_assert.throws(() => URIComponent.URIString(component.TYPE_SCHEME, true), TypeError);
+			_assert.throws(() => URIComponent.URIString(component.TYPE_SCHEME, 1), TypeError);
+			_assert.throws(() => URIComponent.URIString(component.TYPE_SCHEME, /^1$/), TypeError);
+			_assert.throws(() => URIComponent.URIString(component.TYPE_SCHEME, () => 1), TypeError);
+			_assert.throws(() => URIComponent.URIString(component.TYPE_SCHEME, { "1" : 1 }), TypeError);
+			_assert.doesNotThrow(() => URIComponent.URIString(component.TYPE_SCHEME, ""));
+			_assert.doesNotThrow(() => URIComponent.URIString(component.TYPE_USER, "1"));
+			_assert.doesNotThrow(() => URIComponent.URIString(component.TYPE_NAME, "foo"));
+			_assert.doesNotThrow(() => URIComponent.URIString(component.TYPE_PORT, "bar"));
+			_assert.doesNotThrow(() => URIComponent.URIString(component.TYPE_PATH, "true"));
+			_assert.doesNotThrow(() => URIComponent.URIString(component.TYPE_QUERY, ""));
+			_assert.doesNotThrow(() => URIComponent.URIString(component.TYPE_FRAGMENT, ""));
+		});
+
+		it("should return an initialized instance", () => {
+			const ins = URIComponent.URIString(component.TYPE_PATH, "abc");
+
+			_assert(ins instanceof URIComponent);
+			_assert.strictEqual(ins.type, component.TYPE_PATH);
+			_assert.strictEqual(ins.string, "abc");
+		});
+
+		it("should accept an URIComponent as optional third argument", () => {
+			const a = new URIComponent(component.TYPE_SCHEME, "abc");
+
+			_assert.throws(() => URIComponent.URIString(component.TYPE_PATH, "abc", null));
+			_assert.throws(() => URIComponent.URIString(component.TYPE_PATH, "abc", true));
+			_assert.throws(() => URIComponent.URIString(component.TYPE_PATH, "abc", 1));
+			_assert.throws(() => URIComponent.URIString(component.TYPE_PATH, "abc", "1"));
+			_assert.throws(() => URIComponent.URIString(component.TYPE_PATH, "abc", /^1$/));
+			_assert.throws(() => URIComponent.URIString(component.TYPE_PATH, "abc", () => 1));
+			_assert.throws(() => URIComponent.URIString(component.TYPE_PATH, "abc", { "1" : 1 }));
+			_assert.throws(() => URIComponent.URIString(component.TYPE_PATH, "abc", [ 1 ]));
+			_assert.doesNotThrow(() => URIComponent.URIString(component.TYPE_PATH, "abc", a));
+		});
+
+		it("should return the reinitialized third argument if provided", () => {
+			const a = new URIComponent(component.TYPE_SCHEME, "abc");
+			const b = URIComponent.URIString(component.TYPE_PATH, "def", a);
+
+			_assert.strictEqual(a, b);
+			_assert.strictEqual(b.type, component.TYPE_PATH);
+			_assert.strictEqual(b.string, "def");
+		});
+
+		it("should extract all components from a complete URI", () => {
+			_testUri("http://user:password@subdomain.domain.tld:80/path/to/resource.ext?a=s&b=t,u,v&c#d=w&e=x,y,z&f", {
+				scheme : "http",
+				user : "user:password",
+				name : "subdomain.domain.tld",
+				port : "80",
+				path : "/path/to/resource.ext",
+				query : "a=s&b=t,u,v&c",
+				fragment : "d=w&e=x,y,z&f"
+			});
+		});
+
+		it("should extract all included components from a incomplete URI", () => {
+			_testUri("//user:password@subdomain.domain.tld:80/path/to/resource.ext?a=s&b=t,u,v&c#d=w&e=x,y,z&f", {
+				scheme : "",
+				user : "user:password",
+				name : "subdomain.domain.tld",
+				port : "80",
+				path : "/path/to/resource.ext",
+				query : "a=s&b=t,u,v&c",
+				fragment : "d=w&e=x,y,z&f"
+			});
+
+			_testUri("http://subdomain.domain.tld:80/path/to/resource.ext?a=s&b=t,u,v&c#d=w&e=x,y,z&f", {
+				scheme : "http",
+				user : "",
+				name : "subdomain.domain.tld",
+				port : "80",
+				path : "/path/to/resource.ext",
+				query : "a=s&b=t,u,v&c",
+				fragment : "d=w&e=x,y,z&f"
+			});
+
+			_testUri("http:/path/to/resource.ext?a=s&b=t,u,v&c#d=w&e=x,y,z&f", {
+				scheme : "http",
+				user : "",
+				name : "",
+				port : "",
+				path : "/path/to/resource.ext",
+				query : "a=s&b=t,u,v&c",
+				fragment : "d=w&e=x,y,z&f"
+			});
+
+			_testUri("http://user:password@subdomain.domain.tld/path/to/resource.ext?a=s&b=t,u,v&c#d=w&e=x,y,z&f", {
+				scheme : "http",
+				user : "user:password",
+				name : "subdomain.domain.tld",
+				port : "",
+				path : "/path/to/resource.ext",
+				query : "a=s&b=t,u,v&c",
+				fragment : "d=w&e=x,y,z&f"
+			});
+
+			_testUri("http://user:password@subdomain.domain.tld:80?a=s&b=t,u,v&c#d=w&e=x,y,z&f", {
+				scheme : "http",
+				user : "user:password",
+				name : "subdomain.domain.tld",
+				port : "80",
+				path : "",
+				query : "a=s&b=t,u,v&c",
+				fragment : "d=w&e=x,y,z&f"
+			});
+
+			_testUri("http://user:password@subdomain.domain.tld:80/path/to/resource.ext#d=w&e=x,y,z&f", {
+				scheme : "http",
+				user : "user:password",
+				name : "subdomain.domain.tld",
+				port : "80",
+				path : "/path/to/resource.ext",
+				query : "",
+				fragment : "d=w&e=x,y,z&f"
+			});
+
+			_testUri("http://user:password@subdomain.domain.tld:80/path/to/resource.ext?a=s&b=t,u,v&c", {
+				scheme : "http",
+				user : "user:password",
+				name : "subdomain.domain.tld",
+				port : "80",
+				path : "/path/to/resource.ext",
+				query : "a=s&b=t,u,v&c",
+				fragment : ""
+			});
+		});
+
+		it("should extract all empty components from a incomplete uri", () => {
+			_testUri("://user:password@subdomain.domain.tld:80/path/to/resource.ext?a=s&b=t,u,v&c#d=w&e=x,y,z&f", {
+				scheme : "",
+				user : "user:password",
+				name : "subdomain.domain.tld",
+				port : "80",
+				path : "/path/to/resource.ext",
+				query : "a=s&b=t,u,v&c",
+				fragment : "d=w&e=x,y,z&f"
+			});
+
+			_testUri("http://@subdomain.domain.tld:80/path/to/resource.ext?a=s&b=t,u,v&c#d=w&e=x,y,z&f", {
+				scheme : "http",
+				user : "",
+				name : "subdomain.domain.tld",
+				port : "80",
+				path : "/path/to/resource.ext",
+				query : "a=s&b=t,u,v&c",
+				fragment : "d=w&e=x,y,z&f"
+			});
+
+			_testUri("http://user:password@:80/path/to/resource.ext?a=s&b=t,u,v&c#d=w&e=x,y,z&f", {
+				scheme : "http",
+				user : "user:password",
+				name : "",
+				port : "80",
+				path : "/path/to/resource.ext",
+				query : "a=s&b=t,u,v&c",
+				fragment : "d=w&e=x,y,z&f"
+			});
+
+			_testUri("http://user:password@subdomain.domain.tld:/path/to/resource.ext?a=s&b=t,u,v&c#d=w&e=x,y,z&f", {
+				scheme : "http",
+				user : "user:password",
+				name : "subdomain.domain.tld",
+				port : "",
+				path : "/path/to/resource.ext",
+				query : "a=s&b=t,u,v&c",
+				fragment : "d=w&e=x,y,z&f"
+			});
+
+			_testUri("http://user:password@subdomain.domain.tld:80/?a=s&b=t,u,v&c#d=w&e=x,y,z&f", {
+				scheme : "http",
+				user : "user:password",
+				name : "subdomain.domain.tld",
+				port : "80",
+				path : "/",
+				query : "a=s&b=t,u,v&c",
+				fragment : "d=w&e=x,y,z&f"
+			});
+
+			_testUri("http://user:password@subdomain.domain.tld:80/path/to/resource.ext?#d=w&e=x,y,z&f", {
+				scheme : "http",
+				user : "user:password",
+				name : "subdomain.domain.tld",
+				port : "80",
+				path : "/path/to/resource.ext",
+				query : "",
+				fragment : "d=w&e=x,y,z&f"
+			});
+
+			_testUri("http://user:password@subdomain.domain.tld:80/path/to/resource.ext?a=s&b=t,u,v&c#", {
+				scheme : "http",
+				user : "user:password",
+				name : "subdomain.domain.tld",
+				port : "80",
+				path : "/path/to/resource.ext",
+				query : "a=s&b=t,u,v&c",
+				fragment : ""
+			});
+		});
+
+		it("should extract valid parts from invalid uri", () => {
+			_testUri("<http://user:password@subdomain.domain.tld:80/path/to/resource.ext?a=s&b=t,u,v&c#d=w&e=x,y,z&f", {
+				scheme : Error,
+				user : "user:password",
+				name : "subdomain.domain.tld",
+				port : "80",
+				path : "/path/to/resource.ext",
+				query : "a=s&b=t,u,v&c",
+				fragment : "d=w&e=x,y,z&f"
+			});
+
+			_testUri("http://user:password@subdomain.domain.tld:8<0/path/to/resource.ext?a=s&b=t,u,v&c#d=w&e=x,y,z&f", {
+				scheme : "http",
+				user : "user:password",
+				name : "subdomain.domain.tld",
+				port : Error,
+				path : "/path/to/resource.ext",
+				query : "a=s&b=t,u,v&c",
+				fragment : "d=w&e=x,y,z&f"
+			});
+		});
+
+		it("should encode all valid parts from an unencoded uri", () => {
+			_testUri("<http://us<er:password@sub<domain.domain.tld:8<0/path/to/res<ource.ext?a=s&b=t,<u,v&c#d=w&e=x,<y,z&f", {
+				scheme : Error,
+				user : "us%3Cer:password",
+				name : "sub%3Cdomain.domain.tld",
+				port : Error,
+				path : "/path/to/res%3Cource.ext",
+				query : "a=s&b=t,%3Cu,v&c",
+				fragment : "d=w&e=x,%3Cy,z&f"
+			});
+		});
+
+		it("should detect malformed entities when extracting parts from an uri", () => {
+			_testUri("%3chttp://us%3cer:password@sub%3cdomain.domain.tld:8%3c0/path/to/res%3cource.ext?a=s&b=t,%3cu,v&c#d=w&e=x,%3cy,z&f", {
+				scheme : Error,
+				user : "us%3Cer:password",
+				name : "sub%3Cdomain.domain.tld",
+				port : Error,
+				path : "/path/to/res%3Cource.ext",
+				query : "a=s&b=t,%3Cu,v&c",
+				fragment : "d=w&e=x,%3Cy,z&f"
+			});
+
+			_testUri("%3Xhttp://us%3Xer:password@sub%3Xdomain.domain.tld:8%3X0/path/to/res%3Xource.ext?a=s&b=t,%3Xu,v&c#d=w&e=x,%3Xy,z&f", {
+				scheme : Error,
+				user : Error,
+				name : Error,
+				port : Error,
+				path : Error,
+				query : Error,
+				fragment : Error
+			});
+
+			_testUri("%C3%Bfhttp://us%C3%Bfer:password@sub%C3%Bfdomain.domain.tld:8%C3%Bf0/path/to/res%C3%Bfource.ext?a=s&b=t,%C3%Bfu,v&c#d=w&e=x,%C3%Bfy,z&f", {
+				scheme : Error,
+				user : "us%C3%BFer:password",
+				name : "sub%C3%BFdomain.domain.tld",
+				port : Error,
+				path : "/path/to/res%C3%BFource.ext",
+				query : "a=s&b=t,%C3%BFu,v&c",
+				fragment : "d=w&e=x,%C3%BFy,z&f"
+			});
+		});
+
+		it("should encode all parts from an uppercase uri", () => {
+			_testUri("HTTP://USER:password@SUBDOMAIN.domain.tld:80/PATH/to/resource.ext?A=S&b=t,u,v&c#D=W&e=x,y,z&f", {
+				scheme : "http",
+				user : "USER:password",
+				name : "SUBDOMAIN.domain.tld",
+				port : "80",
+				path : "/PATH/to/resource.ext",
+				query : "A=S&b=t,u,v&c",
+				fragment : "D=W&e=x,y,z&f"
+			});
+
+			_testUri("HTTP%C3%Bf://US%C3%BfER:password@SUB%C3%BfDOMAIN.domain.tld:8%C3%Bf0/PA%C3%BfTH/to/resource.ext?a=s&b=t,%C3%BfU,v&c#d=w&e=x,Y%C3%Bf,z&f", {
+				scheme : Error,
+				user : "US%C3%BFER:password",
+				name : "SUB%C3%BFDOMAIN.domain.tld",
+				port : Error,
+				path : "/PA%C3%BFTH/to/resource.ext",
+				query : "a=s&b=t,%C3%BFU,v&c",
+				fragment : "d=w&e=x,Y%C3%BF,z&f"
+			});
+		});
+
+		it("should reliably handle edge cases", () => {
+			_testUri("/////path/to/resource.ext", {
+				name : "",
+				path : "///path/to/resource.ext"
+			});
+
+			_testUri("http://///path/to/resource.ext", {
+				name : "",
+				path : "///path/to/resource.ext"
+			});
+
+			_testUri("////path/to/resource.ext", {
+				name : "",
+				path : "//path/to/resource.ext"
+			});
+
+			_testUri("http:////path/to/resource.ext", {
+				name : "",
+				path : "//path/to/resource.ext"
+			});
+
+			_testUri("///path/to/resource.ext", {
+				name : "",
+				path : "/path/to/resource.ext"
+			});
+
+			_testUri("http:///path/to/resource.ext", {
+				name : "",
+				path : "/path/to/resource.ext"
+			});
+
+			_testUri("//path/to/resource.ext", {
+				name : "path",
+				path : "/to/resource.ext"
+			});
+
+			_testUri("http://path/to/resource.ext", {
+				name : "path",
+				path : "/to/resource.ext"
+			});
+
+			_testUri("/path/to/resource.ext", {
+				name : "",
+				path : "/path/to/resource.ext"
+			});
+
+			_testUri("http:/path/to/resource.ext", {
+				name : "",
+				path : "/path/to/resource.ext"
+			});
+
+			_testUri("ht/tp://user:password@subdomain.domain.tld:80/path/to/resource.ext", {
+				scheme : "",
+				user : "",
+				name : "",
+				port : "",
+				path : "ht/tp://user:password@subdomain.domain.tld:80/path/to/resource.ext"
+			});
+
+			_testUri("http://us/er:password@subdomain.domain.tld:80/path/to/resource.ext", {
+				scheme : "http",
+				user : "",
+				name : "us",
+				port : "",
+				path : "/er:password@subdomain.domain.tld:80/path/to/resource.ext"
+			});
+
+			_testUri("http://user:password@sub/domain.domain.tld:80/path/to/resource.ext", {
+				scheme : "http",
+				user : "user:password",
+				name : "sub",
+				port : "",
+				path : "/domain.domain.tld:80/path/to/resource.ext"
+			});
+
+			_testUri("http://user:password@subdomain.domain.tld:8/0/path/to/resource.ext", {
+				scheme : "http",
+				user : "user:password",
+				name : "subdomain.domain.tld",
+				port : "8",
+				path : "/0/path/to/resource.ext"
+			});
+
+			_testUri("path/to/resource.ext", {
+				scheme : "",
+				user : "",
+				name : "",
+				port : "",
+				path : "path/to/resource.ext"
+			});
+
+			_testUri(":path/to/resource.ext", {
+				scheme : "",
+				user : "",
+				name : "",
+				port : "",
+				path : ":path/to/resource.ext"
+			});
+
+			_testUri("pa:th/to/resource.ext", {
+				scheme : "pa",
+				user : "",
+				name : "",
+				port : "",
+				path : "th/to/resource.ext"
+			});
+
+			_testUri("pa:th//to/resource.ext", {
+				scheme : "pa",
+				user : "",
+				name : "",
+				port : "",
+				path : "th//to/resource.ext"
+			});
+
+			_testUri("pa:t:h/to/resource.ext", {
+				scheme : "pa",
+				user : "",
+				name : "",
+				port : "",
+				path : "t:h/to/resource.ext"
+			});
+
+			_testUri("/pa:th/to/resource.ext", {
+				scheme : "",
+				user : "",
+				name : "",
+				port : "",
+				path : "/pa:th/to/resource.ext"
+			});
+
+			_testUri("/", {
+				scheme : "",
+				user : "",
+				name : "",
+				port : "",
+				path : "/"
+			});
+
+			_testUri("path/to/resource.ext?a=s?b=t&c=u?d=v&e=w", {
+				query : "a=s?b=t&c=u?d=v&e=w"
+			});
+
+			_testUri("/path/to/resource.ext?a=s#b=t&c=u?d=v&e=w", {
+				query : "a=s",
+				fragment : "b=t&c=u?d=v&e=w"
+			});
+
+			_testUri("/path/to/resource.ext?a=s#b=t&c=u#d=v&e=w", {
+				query : "a=s",
+				fragment : "b=t&c=u%23d=v&e=w"
+			});
+		});
 	});
 
 	describe(".copy", () => {
@@ -360,7 +831,7 @@ describe('URIComponent', () => {
 		it("should correctly encode name components when component type is name", () => {
 			const ins = new URIComponent(component.TYPE_NAME);
 
-			_testSetDecode(ins, true);
+			_testSetDecode(ins);
 			_testSetPreserve(ins, "!%21$%24&%26'%27(%28)%29*%2A+%2B,%2C;%3B=%3D");
 			_testSetEncode(ins, ` "#/:<>?@[\\]^\`{|}${ CTRL_CHARS }${ UNICODE_CHARS }`);
 			_testSetEntity(ins);
