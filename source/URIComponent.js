@@ -75,7 +75,7 @@ const EXPR_URI_FRAGMENT = /#(.*)$/;
 
 const EXPR_ED_NONE = /$^/;
 const EXPR_DE_UNRESERVED = /(?:%(?:2[DE]|3[0-9]|[46][1-9A-F]|5[0-9AF]|7[0-9AE]))+/gi;
-const EXPR_EN = /[\u0000-\u0020\u0022\u0023\u002F\u003A\u003C\u003E-\u0040\u005B-\u005E\u0060\u007B-\u007D\u007F-\uFFFF]/g
+const EXPR_EN = /[\u0000-\u0020\u0022\u0023\u002F\u003A\u003C\u003E-\u0040\u005B-\u005E\u0060\u007B-\u007D\u007F-\uFFFF]/g;
 const EXPR_EN_XC = /[\u0000-\u0020\u0022\u0023\u002F\u003C\u003E-\u0040\u005B-\u005E\u0060\u007B-\u007D\u007F-\uFFFF]/g;
 const EXPR_EN_XCAS = /[\u0000-\u0020\u0022\u0023\u003C\u003E\u003F\u005B-\u005E\u0060\u007B-\u007D\u007F-\uFFFF]/g;
 const EXPR_EN_XCASQ = /[\u0000-\u0020\u0022\u0023\u003C\u003E\u005B-\u005E\u0060\u007B-\u007D\u007F-\uFFFF]/g;
@@ -151,13 +151,17 @@ function _getExpressions(type) {
 
 
 
+/**
+ * RFC-3986 compliant uri component base class
+ */
 export default class URIComponent {
 
 	/**
 	 * Returns a instance of component type represented by string
-	 * @param {Int} type The component type
-	 * @param {String} [string] The component string
-	 * @param {URIComponent} [target] The target instance
+	 * @constructor
+	 * @param {Int} type - The component type
+	 * @param {String} [string] - The component string
+	 * @param {URIComponent} [target] - The target instance
 	 * @returns {URIComponent}
 	 * @throws {TypeError} if target is not a URIComponent instance or undefined
 	 */
@@ -172,14 +176,13 @@ export default class URIComponent {
 	/**
 	 * Returns a instance of component type extracted from string
 	 * @constructor
-	 * @param {Int} type The component type
-	 * @param {String} string The uri string
-	 * @param {URIComponent} [target] The target instance
+	 * @param {Int} type - The component type
+	 * @param {String} string - The uri string
+	 * @param {URIComponent} [target] - The target instance
 	 * @returns {URIComponent}
 	 * @throws {TypeError} if string is not a String
-	 * @throws {TypeError} if target is not a URIComponent instance or undefined
 	 */
-	static URIString(type, string,  target) {
+	static URIString(type, string, target) {
 		if (typeof string !== 'string') throw new TypeError();
 
 		const { uri } = _getExpressions(type);
@@ -216,7 +219,11 @@ export default class URIComponent {
 	}
 
 
-
+	/**
+	 * Creates a new instance
+	 * @param {Int} type - The component type
+	 * @param {String} [string] - The component string
+	 */
 	constructor(type, string = "") {
 		if (TYPES.indexOf(type) === -1) throw new TypeError();
 
@@ -242,7 +249,7 @@ export default class URIComponent {
 	 * @name string
 	 * @type String
 	 * @throws {TypeError} if not setting a string
-	 * @throws {Error}  if setting an invalid component string
+	 * @throws {Error} if setting an invalid component string
 	 */
 	get string() {
 		return _string.get(this);
@@ -268,6 +275,7 @@ export default class URIComponent {
 		_string.set(this, string);
 	}
 
+
 	/**
 	 * true if the instance is empty, false otherwise
 	 * @name empty
@@ -280,8 +288,8 @@ export default class URIComponent {
 
 	/**
 	 * Redefines the instance
-	 * @param {Int} type The component type
-	 * @param {String} [string=''] The uri string
+	 * @param {Int} type - The component type
+	 * @param {String} [string=''] - The uri string
 	 * @returns {URIComponent}
 	 */
 	define(type, string = "") {
@@ -302,6 +310,7 @@ export default class URIComponent {
 
 		return this.define(_type.get(source), _string.get(source));
 	}
+
 
 	/**
 	 * Returns a string representation of the instance
