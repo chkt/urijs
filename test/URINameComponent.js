@@ -476,9 +476,30 @@ describe('URINameComponent', () => {
 	});
 
 	describe('#define', () => {
-		it("should accept a string as optional sole argument");
-		it("should reinitialize the instance");
-		it("should return the instance");
+		it("should accept a string as optional sole argument", () => {
+			const ins = new URINameComponent();
+
+			gen.test([
+				gen.TYPE_UNDEFINED,
+				gen.TYPE_STRING
+			], (first) => ins.define(first));
+		});
+
+		it("should reinitialize the instance", () => {
+			const ins = new URINameComponent("subdomain.domain.tld");
+
+			_assert.strictEqual(ins.string, "subdomain.domain.tld");
+
+			ins.define("baz.bar.foo");
+
+			_assert.strictEqual(ins.string, "baz.bar.foo");
+		});
+
+		it("should return the instance", () => {
+			const ins = new URINameComponent();
+
+			_assert.strictEqual(ins, ins.define("subdomain.domain.tld"));
+		});
 	});
 
 	describe('#toString', () => {
