@@ -2,15 +2,44 @@ import _assert from 'assert';
 
 import URINameComponent from '../source/URINameComponent';
 
+import * as gen from '../source/argumentGenerator';
+
 
 
 describe('URINameComponent', () => {
 	describe(".ComponentString", () => {
-		it("should require a string as first argument");
-		it("should return an initialised instance");
-		it("should assign the first argument as forward notated component");
-		it("should accept a URINameComponent as optional second argument");
-		it("should return the reinitialised second argument if provided");
+		it("should accept a string as optional first argument", () => {
+			gen.test([
+				gen.TYPE_UNDEFINED,
+				gen.TYPE_STRING
+			], first => URINameComponent.ComponentString(first));
+		});
+
+		it("should return an initialised instance", () => {
+			const ins = URINameComponent.ComponentString("subdomain.domain.tld");
+
+			_assert(ins instanceof URINameComponent);
+			_assert.strictEqual(ins.string, "subdomain.domain.tld");
+		});
+
+		it("should accept a URINameComponent as optional second argument", () => {
+			const ins = new URINameComponent();
+
+			gen.test([
+				gen.TYPE_UNDEFINED,
+				gen.TYPE_STRING
+			], [
+				gen.TYPE_UNDEFINED,
+				ins
+			], (first, second) => URINameComponent.ComponentString(first, second));
+		});
+
+		it("should return the reinitialised second argument if provided", () => {
+			const ins = new URINameComponent();
+			const res = URINameComponent.ComponentString("subdomain.domain.tld", ins);
+
+			_assert.strictEqual(res, ins);
+		});
 	});
 
 	describe(".ComponentReverseString", () => {
@@ -20,6 +49,7 @@ describe('URINameComponent', () => {
 		it("should accept a URINameComponent as optional second argument");
 		it("should return the reinitialised second argument if provided");
 	});
+
 	describe(".URIString", () => {
 		it("should require a string as first argument");
 		it("should return an initialised instance");
