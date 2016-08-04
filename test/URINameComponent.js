@@ -413,13 +413,128 @@ describe('URINameComponent', () => {
 	});
 
 	describe('#segments', () => {
-		it("should get a reverse notation array of component segments");
-		it("should set a reverse notation array of component segments");
-		it("should allow setting empty arrays");
-		it("should not allow setting empty component segments");
-		it("should only allow setting component segment strings");
-		it("should only set valid components");
-		it("should correctly encode components");
+		it("should get a reverse notation array of component segments for dns conforming components", () => {
+			const ins = new URINameComponent("subdomain.domain.tld");
+
+			_assert.deepStrictEqual(ins.segments, ["tld", "domain", "subdomain"]);
+		});
+
+		it("should get an empty array for ip4 conforming components", () => {
+			const ins = new URINameComponent("0.0.0.0");
+
+			_assert.deepStrictEqual(ins.segments, []);
+		});
+
+		it("should get an empty array for ip6 conforming components");
+
+		it("should set a reverse notation array of component segments", () => {
+			const ins = new URINameComponent();
+
+			_assert.strictEqual(ins.string, "");
+			_assert.strictEqual(ins.stringReverse, "");
+
+			ins.segments = [ "tld", "domain", "subdomain" ];
+
+			_assert.strictEqual(ins.string, "subdomain.domain.tld");
+			_assert.strictEqual(ins.stringReverse, "tld.domain.subdomain");
+		});
+
+		it("should allow setting empty arrays", () => {
+			const ins = new URINameComponent("subdomain.domain.tld");
+
+			_assert.strictEqual(ins.string, "subdomain.domain.tld");
+			_assert.strictEqual(ins.stringReverse, "tld.domain.subdomain");
+			_assert.doesNotThrow(() => ins.segments = []);
+			_assert.strictEqual(ins.string, "");
+			_assert.strictEqual(ins.stringReverse, "");
+		});
+
+		it("should accept valid dns comforming component segments", () => {
+			const ins = new URINameComponent();
+
+			const args = [
+				{ item : [ "" ], valid : false },
+				{ item : [ "t" ], valid : true },
+				{ item : [ "T" ], valid : true },
+				{ item : [ "0" ], valid : false },
+				{ item : [ "-" ], valid : false },
+				{ item : [ "td" ], valid : true },
+				{ item : [ "TD" ], valid : true },
+				{ item : ["t0" ], valid : true },
+				{ item : [ "t-" ], valid : false },
+				{ item : [ "tld" ], valid : true },
+				{ item : [ "TLD" ], valid : true },
+				{ item : [ "tl0" ], valid : true },
+				{ item : [ "t0d" ], valid : true },
+				{ item : [ "tl-" ], valid : false },
+				{ item : [ "t-d" ], valid : true },
+				{ item : [ "", "tld" ], valid : false },
+				{ item : [ "d", "tld" ], valid : true },
+				{ item : [ "D", "tld" ], valid : true },
+				{ item : [ "0", "tld" ], valid : false },
+				{ item : [ "-", "tld" ], valid : false },
+				{ item : [ "do", "tld" ], valid : true },
+				{ item : [ "DO", "tld" ], valid : true },
+				{ item : [ "0o", "tld" ], valid : false },
+				{ item : [ "d0","tld" ], valid : true },
+				{ item : [ "-o", "tld" ], valid : false },
+				{ item : [ "d-", "tld" ], valid : false },
+				{ item : [ "dom", "tld" ], valid : true },
+				{ item : [ "DOM", "tld" ], valid : true },
+				{ item : [ "0om", "tld" ], valid : false },
+				{ item : [ "d0m", "tld" ], valid : true },
+				{ item : [ "do0", "tld" ], valid : true },
+				{ item : [ "-om", "tld" ], valid : false },
+				{ item : [ "d-m", "tld" ], valid : true },
+				{ item : ["do-", "tld" ], valid : false }
+			];
+
+			for (let arg of args) {
+				if (arg.valid) _assert.doesNotThrow(() => ins.segments = arg.item);
+				else _assert.throws(() => ins.segments = arg.item, Error);
+			}
+		});
+
+		it("should not accept valid ip4 conforming component segments", () => {
+			const ins = new URINameComponent();
+
+			const args = [
+				{ item : "0.0.0.0", valid : false },
+				{ item : "255.255.255.255", valid : false }
+			];
+
+			for (let arg of args) {
+				if (arg.valid) _assert.doesNotThrow(() => ins.segments = arg.item);
+				else _assert.throws(() => ins.segments = arg.item, Error);
+			}
+		});
+
+		it("should not accept valid ip6 conforming component segments");
+
+		it("should not accept other valid name component segments", () => {
+			const ins = new URINameComponent();
+
+			const args = {
+				"some!name" : false,
+				"some$name" : false,
+				"some'name" : false,
+				"some(name" : false,
+				"some)name" : false,
+				"some*name" : false,
+				"some+name" : false,
+				"some,name" : false,
+				"some;name" : false,
+				"some=name" : false,
+				"some_name" : false,
+				"some~name" : false,
+				"some%20name" : false
+			};
+
+			for (let arg in args) {
+				if (args[arg]) _assert.doesNotThrow(() => ins.segments = [ arg ]);
+				else _assert.throws(() => ins.segments = [ arg ], Error);
+			}
+		});
 	});
 
 	describe("#isIP4", () => {
