@@ -452,8 +452,27 @@ describe('URINameComponent', () => {
 	});
 
 	describe("#isDNS", () => {
-		it("should be true if the component is a valid dns name");
-		it("should not be settable");
+		it("should be true if the component is a valid dns name", () => {
+			const ins = new URINameComponent("0.0.0.0");
+
+			const args = {
+				"" : false,
+				"0.0.0.0" : false,
+				"subdomain.domain.tld" : true
+			};
+
+			for (let arg in args) {
+				ins.string = arg;
+
+				_assert.strictEqual(ins.isDNS, args[arg]);
+			}
+		});
+
+		it("should not be settable", () => {
+			const ins = new URINameComponent();
+
+			_assert.throws(() => ins.isDNS = true, Error);
+		});
 	});
 
 	describe('#define', () => {
