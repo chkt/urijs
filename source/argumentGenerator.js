@@ -8,8 +8,15 @@ export const TYPE_BOOLEAN = Symbol("boolean");
 export const TYPE_NUMBER = Symbol("number");
 export const TYPE_NUMBER_NAN = Symbol("NaN");
 export const TYPE_NUMBER_POS = Symbol("number: n>=0");
+export const TYPE_NUMBER_NEG = Symbol("number: n<=0");
 export const TYPE_NUMBER_INT = Symbol("number: n%1==0");
 export const TYPE_NUMBER_INT_POS = Symbol("number: n%1==0&&n>=0");
+export const TYPE_NUMBER_INT_NEG = Symbol("number: n%1==0&&n<=0");
+export const TYPE_NUMBER_INT_POS_8 = Symbol("number: n%1==0%%n>=0&&n<(1<<7)");
+export const TYPE_NUMBER_INT_POS_16 = Symbol("number: n%1==0&&n>=0&&n<(1<<15)");
+export const TYPE_NUMBER_INT_POS_24 = Symbol("number: n%1==0&&n>=0&&n<(1<<23)");
+export const TYPE_NUMBER_INT_POS_32 = Symbol("number: n%1==0&&n>=0&&n<(1<<31)");
+export const TYPE_NUMBER_INT_POS_MAX = Symbol("number: n%1==0&&n>=0");
 export const TYPE_STRING = Symbol("string");
 export const TYPE_STRING_EMPTY = Symbol("string: ^$");
 export const TYPE_STRING_CHAR = Symbol("string: ^.$");
@@ -37,9 +44,15 @@ const FLAG_TYPE_OBJ = 0x80;
 const FLAG_NUM_NAN = 0x00100;
 const FLAG_NUM_INT = 0x00200;
 const FLAG_NUM_POS = 0x00400;
-const FLAG_STR_ETY = 0x00800;
-const FLAG_STR_CHR = 0x01000;
-const FLAG_STR_MUL = 0x02000;
+const FLAG_NUM_NEG = 0x200000;
+const FLAG_NUM_8 = 0x1000000;
+const FLAG_NUM_16 = 0x2000000;
+const FLAG_NUM_24 = 0x100000;
+const FLAG_NUM_32 = 0x400000;
+const FLAG_NUM_MAX = 0x800000;
+const FLAG_STR_EMPTY = 0x00800;
+const FLAG_STR_CHARACTER = 0x01000;
+const FLAG_STR_NONEMPTY = 0x02000;
 const FLAG_OBJ_FN = 0x04000;
 const FLAG_OBJ_ARR = 0x08000;
 const FLAG_OBJ_ERR = 0x10000;
@@ -54,12 +67,19 @@ const map = new Map([
 	[ TYPE_NUMBER, FLAG_TYPE_NUMBER ],
 	[ TYPE_NUMBER_NAN, FLAG_TYPE_NUMBER | FLAG_NUM_NAN ],
 	[ TYPE_NUMBER_POS, FLAG_TYPE_NUMBER | FLAG_NUM_POS ],
+	[ TYPE_NUMBER_NEG, FLAG_TYPE_NUMBER | FLAG_NUM_NEG ],
 	[ TYPE_NUMBER_INT, FLAG_TYPE_NUMBER | FLAG_NUM_INT ],
 	[ TYPE_NUMBER_INT_POS, FLAG_TYPE_NUMBER | FLAG_NUM_INT | FLAG_NUM_POS ],
+	[ TYPE_NUMBER_INT_NEG, FLAG_TYPE_NUMBER | FLAG_NUM_INT | FLAG_NUM_NEG ],
+	[ TYPE_NUMBER_INT_POS_8, FLAG_TYPE_NUMBER | FLAG_NUM_INT | FLAG_NUM_POS | FLAG_NUM_8 | FLAG_NUM_16 | FLAG_NUM_24 | FLAG_NUM_32 | FLAG_NUM_MAX ],
+	[ TYPE_NUMBER_INT_POS_16, FLAG_TYPE_NUMBER | FLAG_NUM_INT | FLAG_NUM_POS | FLAG_NUM_16 | FLAG_NUM_24 | FLAG_NUM_32 | FLAG_NUM_MAX ],
+	[ TYPE_NUMBER_INT_POS_24, FLAG_TYPE_NUMBER | FLAG_NUM_INT | FLAG_NUM_POS | FLAG_NUM_24 | FLAG_NUM_32 | FLAG_NUM_MAX ],
+	[ TYPE_NUMBER_INT_POS_32, FLAG_TYPE_NUMBER | FLAG_NUM_INT | FLAG_NUM_POS | FLAG_NUM_32 | FLAG_NUM_MAX ],
+	[ TYPE_NUMBER_INT_POS_MAX, FLAG_TYPE_NUMBER | FLAG_NUM_INT | FLAG_NUM_POS | FLAG_NUM_MAX ],
 	[ TYPE_STRING, FLAG_TYPE_STRING ],
-	[ TYPE_STRING_EMPTY, FLAG_TYPE_STRING | FLAG_STR_ETY ],
-	[ TYPE_STRING_CHAR, FLAG_TYPE_STRING | FLAG_STR_CHR ],
-	[ TYPE_STRING_NONEMPTY, FLAG_TYPE_STRING | FLAG_STR_CHR | FLAG_STR_MUL ],
+	[ TYPE_STRING_EMPTY, FLAG_TYPE_STRING | FLAG_STR_EMPTY ],
+	[ TYPE_STRING_CHAR, FLAG_TYPE_STRING | FLAG_STR_CHARACTER | FLAG_STR_NONEMPTY ],
+	[ TYPE_STRING_NONEMPTY, FLAG_TYPE_STRING | FLAG_STR_NONEMPTY ],
 	[ TYPE_SYMBOL, FLAG_TYPE_SYMBOL ],
 	[ TYPE_REGEXP, FLAG_TYPE_REGEXP ],
 	[ TYPE_OBJ, FLAG_TYPE_OBJ ],
@@ -77,10 +97,19 @@ const TYPES = Object.freeze([
 	TYPE_BOOLEAN,
 	TYPE_NUMBER,
 	TYPE_NUMBER_NAN,
+	TYPE_NUMBER_POS,
+	TYPE_NUMBER_NEG,
 	TYPE_NUMBER_INT,
 	TYPE_NUMBER_INT_POS,
+	TYPE_NUMBER_INT_NEG,
+	TYPE_NUMBER_INT_POS_8,
+	TYPE_NUMBER_INT_POS_16,
+	TYPE_NUMBER_INT_POS_24,
+	TYPE_NUMBER_INT_POS_32,
+	TYPE_NUMBER_INT_POS_MAX,
 	TYPE_STRING,
 	TYPE_STRING_EMPTY,
+	TYPE_STRING_CHAR,
 	TYPE_STRING_NONEMPTY,
 	TYPE_SYMBOL,
 	TYPE_REGEXP,
@@ -106,8 +135,16 @@ function _isDefaultType(type) {
 	return !_isType(type) || [
 		TYPE_BOOLEAN,
 		TYPE_NUMBER,
+		TYPE_NUMBER_POS,
+		TYPE_NUMBER_NEG,
 		TYPE_NUMBER_INT,
 		TYPE_NUMBER_INT_POS,
+		TYPE_NUMBER_INT_NEG,
+		TYPE_NUMBER_INT_POS_8,
+		TYPE_NUMBER_INT_POS_16,
+		TYPE_NUMBER_INT_POS_24,
+		TYPE_NUMBER_INT_POS_32,
+		TYPE_NUMBER_INT_POS_MAX,
 		TYPE_STRING,
 		TYPE_STRING_EMPTY,
 		TYPE_STRING_NONEMPTY,
@@ -142,11 +179,18 @@ function _getFlags(item) {
 function _getFilteredTypes(list) {
 	const types = TYPES.slice(0);
 
+	const filter = [
+		TYPE_NUMBER,
+		TYPE_NUMBER_INT,
+		TYPE_NUMBER_INT_POS,
+		TYPE_STRING
+	];
+
 	list.forEach((item, index, source) => {
 		if (!_isType(item)) types.push(item);
 	});
 
-	return types;
+	return types.filter((item, index, source) => filter.indexOf(item) === -1);
 }
 
 function _getDefaultArguments(args) {
@@ -160,16 +204,12 @@ function _getDefaultArguments(args) {
 }
 
 
-function _getNumber(positive, integer) {
-	const rand = Math.random();
-	let num = 0;
+function _getNumber(positive, integer, min, max) {
+	const range = Math.max(max - min, 0);
 
-	if (integer) num = Math.trunc(rand * Number.MAX_SAFE_INTEGER);
-	else num = rand * Number.MAX_VALUE;
+	let n = Math.abs(Math.random() * range) * (positive ? 1 : -1);
 
-	if (positive) num = Math.abs(num);
-
-	return num;
+	return integer ? Math.trunc(n) : n;
 }
 
 
@@ -189,11 +229,15 @@ function _getArgument(type) {
 		case TYPE_UNDEFINED : return undefined;
 		case TYPE_NULL : return null;
 		case TYPE_BOOLEAN : return Boolean(Math.random());
-		case TYPE_NUMBER : return _getNumber(false, false);
 		case TYPE_NUMBER_NAN : return NaN;
-		case TYPE_NUMBER_POS : return _getNumber(true, false);
-		case TYPE_NUMBER_INT : return _getNumber(false, true);
-		case TYPE_NUMBER_INT_POS : return _getNumber(true, true);
+		case TYPE_NUMBER_POS : return _getNumber(true, false, 0, Number.MAX_VALUE);
+		case TYPE_NUMBER_NEG : return _getNumber(false, false, -Number.MAX_VALUE, 0);
+		case TYPE_NUMBER_INT_NEG : return _getNumber(false, true, 0, Number.MAX_SAFE_INTEGER);
+		case TYPE_NUMBER_INT_POS_8 : return _getNumber(true, true, 0, 0xff);
+		case TYPE_NUMBER_INT_POS_16 : return _getNumber(true, true, 0x0100, 0xffff);
+		case TYPE_NUMBER_INT_POS_24 : return _getNumber(true, true, 0x010000, 0xffffff);
+		case TYPE_NUMBER_INT_POS_32 : return _getNumber(true, true, 0x01000000, 0xffffffff);
+		case TYPE_NUMBER_INT_POS_MAX : return _getNumber(true, true, 0x100000000, Number.MAX_SAFE_INTEGER);
 		case TYPE_STRING : return 'abc';
 		case TYPE_STRING_EMPTY : return '';
 		case TYPE_STRING_CHAR : return 'a';
@@ -241,8 +285,6 @@ export function test(...args) {
 	if (typeof fn !== 'function') throw new TypeError();
 
 	for (let arg of generator(...args)) {
-		//console.log(arg);
-
 		if (arg.valid) _assert.doesNotThrow(() => fn(...arg.items));
 		else _assert.throws(() => fn(...arg.items));
 	}
