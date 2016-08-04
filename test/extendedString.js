@@ -185,7 +185,7 @@ describe('extendRight', () => {
 			[ gen.TYPE_STRING ],
 			[ gen.TYPE_STRING_NONEMPTY ],
 			[ gen.TYPE_UNDEFINED, gen.TYPE_NUMBER_INT_POS_24 ],
-			(first, second, third) => console.log(first, second, third) || exstr.extendRight(first, second, third)
+			(first, second, third) => exstr.extendRight(first, second, third)
 		);
 	});
 
