@@ -22,6 +22,31 @@ function _extendLeft(pattern, length) {
 }
 
 /**
+ * Returns a copy of this right-extended by pattern
+ * @private
+ * @param {String}  pattern - The extension pattern
+ * @param {String} [length] - The extension length
+ * @returns {String}
+ * @throws {TypeError} if pattern is not a nonempty String
+ * @throws {TypeError} if length is not an Uint or undefined
+ */
+function _extendRight(pattern, length) {
+	if (length === undefined) length = pattern.length;
+
+	if (
+		typeof pattern !== 'string' || pattern === "" ||
+		!Number.isSafeInteger(length) || length < 0
+	) throw new TypeError();
+
+	const str = String(this);
+	let l = pattern.length;
+
+	while (l < length) pattern += pattern, l *= 2;
+
+	return str + pattern.substr(l - Math.max(length - str.length, 0), l);
+}
+
+/**
  * Returns an Array of utf-8 encoded character codes of this at index
  * @param {Int} index The character index
  * @returns {Array}
@@ -209,6 +234,19 @@ export function extendLeft(string, pattern, length) {
 	if (typeof string !== 'string') throw new TypeError();
 
 	return _extendLeft.call(string, pattern, length);
+}
+
+/**
+ * Returns a copy of string right-extended by pattern
+ * @param {String} string - The source string
+ * @param {String} pattern - The extension pattern
+ * @param {String} [length] - The extension length
+ * @returns {String}
+ */
+export function extendRight(string, pattern, length) {
+	if (typeof string !== 'string') throw new TypeError();
+
+	return _extendRight.call(string, pattern, length);
 }
 
 /**
