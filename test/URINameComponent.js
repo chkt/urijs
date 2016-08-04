@@ -108,6 +108,155 @@ describe('URINameComponent', () => {
 		});
 	});
 
+	describe('#string', () => {
+		it("should get the forward notation component", () => {
+			const ins = new URINameComponent("subdomain.domain.tld");
+
+			_assert.strictEqual(ins.string, "subdomain.domain.tld");
+		});
+
+		it("should set the forward notation component", () => {
+			const ins = new URINameComponent();
+
+			_assert.strictEqual(ins.string, "");
+
+			ins.string = "subdomain.domain.tld";
+
+			_assert.strictEqual(ins.string, "subdomain.domain.tld");
+		});
+
+		it("should allow setting empty components", () => {
+			const ins = new URINameComponent();
+
+			_assert.doesNotThrow(() => ins.string = "");
+		});
+
+		it("should accept valid dns compatible components", () => {
+			const ins = new URINameComponent();
+
+			const args = {
+				"t" : true,
+				"T" : true,
+				"0" : false,
+				"-" : false,
+				"td" : true,
+				"TD" : true,
+				"t0" : true,
+				"t-" : false,
+				"tld" : true,
+				"TLD" : true,
+				"tl0" : true,
+				"t0d" : true,
+				"tl-" : false,
+				"t-d" : true,
+				".tld" : false,
+				"d.tld" : true,
+				"D.tld" : true,
+				"0.tld" : false,
+				"-.tld" : false,
+				"do.tld" : true,
+				"DO.tld" : true,
+				"0o.tld" : false,
+				"d0.tld" : true,
+				"-o.tld" : false,
+				"d-.tld" : false,
+				"dom.tld" : true,
+				"DOM.tld" : true,
+				"0om.tld" : false,
+				"d0m.tld" : true,
+				"do0.tld" : true,
+				"-om.tld" : false,
+				"d-m.tld" : true,
+				"do-.tld" : false
+			};
+
+			for (let arg in args) {
+				if (args[arg]) _assert.doesNotThrow(() => ins.string = String(arg));
+				else _assert.throws(() => ins.string = String(arg), Error);
+			}
+		});
+
+		it("should accept valid ip4 compatible components", () => {
+			const ins = new URINameComponent();
+
+			const args = {
+				"0" : false,
+				"0." : false,
+				"0.0" : false,
+				"0.0." : false,
+				"0.0.0" : false,
+				"0.0.0." : false,
+				"0.0.0.0" : true,
+				"0.0.0.0." : false,
+				"0.0.0.0.0" : false,
+				"00.0.0.0" : false,
+				"1.0.0.0" : true,
+				"9.0.0.0" : true,
+				"09.0.0.0" : false,
+				"10.0.0.0" : true,
+				"19.0.0.0" : true,
+				"91.0.0.0" : true,
+				"99.0.0.0" : true,
+				"099.0.0.0" : false,
+				"100.0.0.0" : true,
+				"101.0.0.0" : true,
+				"110.0.0.0" : true,
+				"109.0.0.0" : true,
+				"190.0.0.0" : true,
+				"199.0.0.0" : true,
+				"200.0.0.0" : true,
+				"0200.0.0.0" : false,
+				"201.0.0.0" : true,
+				"210.0.0.0" : true,
+				"211.0.0.0" : true,
+				"209.0.0.0" : true,
+				"240.0.0.0" : true,
+				"249.0.0.0" : true,
+				"250.0.0.0" : true,
+				"251.0.0.0" : true,
+				"255.0.0.0" : true,
+				"256.0.0.0" : false,
+				"259.0.0.0" : false,
+				"260.0.0.0" : false,
+				"261.0.0.0" : false,
+				"265.0.0.0" : false,
+				"269.0.0.0" : false
+			};
+
+			for (let arg in args) {
+				if (args[arg]) _assert.doesNotThrow(() => ins.string = arg);
+				else _assert.throws(() => ins.string = arg, Error);
+			}
+		});
+
+		it("should accept valid ip6 compatible components");
+
+		it("should not accept other legal name components", () => {
+			const ins = new URINameComponent();
+
+			const args = {
+				"some!name" : false,
+				"some$name" : false,
+				"some'name" : false,
+				"some(name" : false,
+				"some)name" : false,
+				"some*name" : false,
+				"some+name" : false,
+				"some,name" : false,
+				"some;name" : false,
+				"some=name" : false,
+				"some_name" : false,
+				"some~name" : false,
+				"some%20name" : false
+			};
+
+			for (let arg in args) {
+				if (args[arg]) _assert.doesNotThrow(() => ins.string = arg);
+				else _assert.throws(() => ins.string = arg, Error);
+			}
+		});
+	});
+
 	describe('#stringReverse', () => {
 		it("should get the reverse notation component");
 		it("should set the reverse notation component");
