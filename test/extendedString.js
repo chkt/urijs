@@ -2,6 +2,8 @@ import _assert from 'assert';
 
 import * as exstr from '../source/extendedString';
 
+import * as gen from '../source/argumentGenerator';
+
 
 
 describe("fromUtf8CharCode", () => {
@@ -174,6 +176,30 @@ describe('extendLeft', () => {
 		_assert.strictEqual(exstr.extendLeft("", "123", 2), "12");
 		_assert.strictEqual(exstr.extendLeft("", "123", 3), "123");
 		_assert.strictEqual(exstr.extendLeft("", "123", 4), "1231");
+	});
+});
+
+describe('extendRight', () => {
+	it("should require as string as first,a nonempty string as second and a positive integer as optional third argument", () => {
+		gen.test(
+			[ gen.TYPE_STRING ],
+			[ gen.TYPE_STRING_NONEMPTY ],
+			[ gen.TYPE_UNDEFINED, gen.TYPE_NUMBER_INT_POS_24 ],
+			(first, second, third) => console.log(first, second, third) || exstr.extendRight(first, second, third)
+		);
+	});
+
+	it("should return a string that is the first string padded by the second string", () => {
+		_assert.strictEqual(exstr.extendRight("", "1234"), "1234");
+		_assert.strictEqual(exstr.extendRight("x", "1234"), "x234");
+		_assert.strictEqual(exstr.extendRight("x", "1"), "x");
+		_assert.strictEqual(exstr.extendRight("xx", "1"), "xx");
+		_assert.strictEqual(exstr.extendRight("xx", "1", 2), "xx");
+		_assert.strictEqual(exstr.extendRight("xx", "1", 3), "xx1");
+		_assert.strictEqual(exstr.extendRight("", "123", 1), "3");
+		_assert.strictEqual(exstr.extendRight("", "123", 2), "23");
+		_assert.strictEqual(exstr.extendRight("", "123", 3), "123");
+		_assert.strictEqual(exstr.extendRight("", "123", 4), "3123");
 	});
 });
 
