@@ -94,8 +94,18 @@ describe('URINameComponent', () => {
 	});
 
 	describe('#constructor', () => {
-		it("should accept a string as optional sole argument");
-		it("should create a new instance");
+		it("should accept a string as optional sole argument", () => {
+			gen.test([
+				gen.TYPE_UNDEFINED,
+				gen.TYPE_STRING
+			], (first) => new URINameComponent(first));
+		});
+
+		it("should create a new instance", () => {
+			const ins = new URINameComponent();
+
+			_assert(ins instanceof URINameComponent);
+		});
 	});
 
 	describe('#stringReverse', () => {
