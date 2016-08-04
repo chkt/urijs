@@ -423,8 +423,27 @@ describe('URINameComponent', () => {
 	});
 
 	describe("#isIP4", () => {
-		it("should be true if the component is a valid ip4 address");
-		it("should not be settable");
+		it("should be true if the component is a valid ip4 address", () => {
+			const ins = new URINameComponent();
+
+			const args = {
+				"" : false,
+				"0.0.0.0" : true,
+				"domain.subdomain.tld" : false
+			};
+
+			for (let arg in args) {
+				ins.string = arg;
+
+				_assert.strictEqual(ins.isIP4, args[arg]);
+			}
+		});
+
+		it("should not be settable", () => {
+			const ins = new URINameComponent();
+
+			_assert.throws(() => ins.isIP4 = true, Error);
+		});
 	});
 
 	describe("#isIP6", () => {
