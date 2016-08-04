@@ -43,11 +43,38 @@ describe('URINameComponent', () => {
 	});
 
 	describe(".ComponentReverseString", () => {
-		it("should require a string as first argument");
-		it("should return an initialised instance");
-		it("should assign the first argument as a reverse notated component");
-		it("should accept a URINameComponent as optional second argument");
-		it("should return the reinitialised second argument if provided");
+		it("should accept a string as optional first argument", () => {
+			gen.test([
+				gen.TYPE_UNDEFINED,
+				gen.TYPE_STRING
+			], first => URINameComponent.ComponentReverseString(first));
+		});
+
+		it("should return an initialised instance", () => {
+			const ins = URINameComponent.ComponentReverseString("tld.domain.subdomain");
+
+			_assert(ins instanceof URINameComponent);
+			_assert.strictEqual(ins.string, "subdomain.domain.tld");
+		});
+
+		it("should accept a URINameComponent as optional second argument", () => {
+			const ins = new URINameComponent();
+
+			gen.test([
+				gen.TYPE_UNDEFINED,
+				gen.TYPE_STRING
+			], [
+				gen.TYPE_UNDEFINED,
+				ins
+			], (first, second) => URINameComponent.ComponentReverseString(first, second));
+		});
+
+		it("should return the reinitialised second argument if provided", () => {
+			const ins = new URINameComponent();
+			const res = URINameComponent.ComponentReverseString("tld.domain.subdomain", ins);
+
+			_assert.strictEqual(res, ins);
+		});
 	});
 
 	describe(".URIString", () => {
