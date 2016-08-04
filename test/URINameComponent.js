@@ -503,8 +503,26 @@ describe('URINameComponent', () => {
 	});
 
 	describe('#toString', () => {
-		it("should accept a bitfield as optional first argument");
-		it("should return the same as #string if the NAME_REVERSE flag is not set");
-		it("should return the same as #stringReverse if the NAME_REVERSE flag is set");
+		it("should accept a boolean as optional first argument", () => {
+			const ins = new URINameComponent("subdomain.domain.tld");
+
+			gen.test([
+				gen.TYPE_UNDEFINED,
+				gen.TYPE_BOOLEAN
+			], (first) => ins.toString(first));
+		});
+
+		it("should return the same as #string if first argument is not true", () => {
+			const ins = new URINameComponent("subdomain.domain.tld");
+
+			_assert.strictEqual(ins.string, ins.toString());
+			_assert.strictEqual(ins.string, ins.toString(false));
+		});
+
+		it("should return the same as #stringReverse if first argument is true", () => {
+			const ins = new URINameComponent("subdomain.domain.tld");
+
+			_assert.strictEqual(ins.stringReverse, ins.toString(true));
+		});
 	});
 });
