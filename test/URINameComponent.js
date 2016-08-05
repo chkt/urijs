@@ -78,11 +78,35 @@ describe('URINameComponent', () => {
 	});
 
 	describe(".URIString", () => {
-		it("should require a string as first argument");
-		it("should return an initialised instance");
-		it("should assign the extracted component as forward notated component");
-		it("should accept an URINameComponent as optional second argument");
-		it("should return the reinitialised second argument if provided");
+		it("should require a string as first argument", () => {
+			gen.test([
+				gen.TYPE_STRING
+			], first => URINameComponent.URIString(first));
+		});
+
+		it("should return an initialised instance", () => {
+			const ins = URINameComponent.URIString("//subdomain.domain.tld");
+
+			_assert(ins instanceof URINameComponent);
+			_assert(ins.string, "subdomain.domain.tld");
+		});
+
+		it("should accept an URINameComponent as optional second argument", () => {
+			gen.test([
+				gen.TYPE_STRING
+			], [
+				gen.TYPE_UNDEFINED,
+				new URINameComponent("")
+			], (first, second) => URINameComponent.URIString(first, second));
+		});
+
+		it("should return the reinitialised second argument if provided", () => {
+			const target = new URINameComponent("domain.tld");
+			const ins = URINameComponent.URIString("//subdomain.domain.tld", target);
+
+			_assert.strictEqual(ins, target);
+			_assert.strictEqual(ins.string, "subdomain.domain.tld");
+		});
 	});
 
 	describe(".Segments", () => {
