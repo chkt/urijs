@@ -3,14 +3,14 @@ import _assert from 'assert';
 import URINameComponent from '../source/URINameComponent';
 
 import { describe, it } from 'mocha';
-import * as use from 'tesa';
+import useWith, * as use from 'tesa';
 
 
 
 describe('URINameComponent', () => {
 	describe(".ComponentString", () => {
 		it("should accept a string as optional first argument", () => {
-			use.test([
+			useWith([
 				use.TYPE_UNDEFINED,
 				use.TYPE_STRING
 			], first => URINameComponent.ComponentString(first));
@@ -26,7 +26,7 @@ describe('URINameComponent', () => {
 		it("should accept a URINameComponent as optional second argument", () => {
 			const ins = new URINameComponent();
 
-			use.test([
+			useWith([
 				use.TYPE_UNDEFINED,
 				use.TYPE_STRING
 			], [
@@ -45,7 +45,7 @@ describe('URINameComponent', () => {
 
 	describe(".ComponentReverseString", () => {
 		it("should accept a string as optional first argument", () => {
-			use.test([
+			useWith([
 				use.TYPE_UNDEFINED,
 				use.TYPE_STRING
 			], first => URINameComponent.ComponentReverseString(first));
@@ -61,7 +61,7 @@ describe('URINameComponent', () => {
 		it("should accept a URINameComponent as optional second argument", () => {
 			const ins = new URINameComponent();
 
-			use.test([
+			useWith([
 				use.TYPE_UNDEFINED,
 				use.TYPE_STRING
 			], [
@@ -80,7 +80,7 @@ describe('URINameComponent', () => {
 
 	describe(".URIString", () => {
 		it("should require a string as first argument", () => {
-			use.test([
+			useWith([
 				use.TYPE_STRING
 			], first => URINameComponent.URIString(first));
 		});
@@ -93,7 +93,7 @@ describe('URINameComponent', () => {
 		});
 
 		it("should accept an URINameComponent as optional second argument", () => {
-			use.test([
+			useWith([
 				use.TYPE_STRING
 			], [
 				use.TYPE_UNDEFINED,
@@ -120,7 +120,7 @@ describe('URINameComponent', () => {
 
 	describe('#constructor', () => {
 		it("should accept a string as optional sole argument", () => {
-			use.test([
+			useWith([
 				use.TYPE_UNDEFINED,
 				use.TYPE_STRING
 			], (first) => new URINameComponent(first));
@@ -619,7 +619,7 @@ describe('URINameComponent', () => {
 		it("should accept a string as optional sole argument", () => {
 			const ins = new URINameComponent();
 
-			use.test([
+			useWith([
 				use.TYPE_UNDEFINED,
 				use.TYPE_STRING
 			], (first) => ins.define(first));
@@ -646,7 +646,7 @@ describe('URINameComponent', () => {
 		it("should accept a boolean as optional first argument", () => {
 			const ins = new URINameComponent("subdomain.domain.tld");
 
-			use.test([
+			useWith([
 				use.TYPE_UNDEFINED,
 				use.TYPE_BOOLEAN
 			], (first) => ins.toString(first));

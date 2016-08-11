@@ -3,7 +3,7 @@ import _assert from 'assert';
 import * as exstr from '../source/extendedString';
 
 import { describe, it } from 'mocha';
-import * as use from 'tesa';
+import useWith, * as use from 'tesa';
 
 
 
@@ -182,7 +182,7 @@ describe('extendLeft', () => {
 
 describe('extendRight', () => {
 	it("should require as string as first,a nonempty string as second and a positive integer as optional third argument", () => {
-		use.test(
+		useWith(
 			[ use.TYPE_STRING ],
 			[ use.TYPE_STRING_NONEMPTY ],
 			[ use.TYPE_UNDEFINED, use.TYPE_NUMBER_INT_POS_24 ],
