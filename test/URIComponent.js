@@ -4,8 +4,8 @@ import URIComponent from '../source/URIComponent';
 import * as component from '../source/URIComponent';
 
 import * as exstr from '../source/extendedString';
-import generator from '../source/characterGenerator';
-import * as gen from '../source/characterGenerator';
+import generator from '../util/characterGenerator';
+import * as gen from '../util/characterGenerator';
 
 
 const CTRL_CHARS =
