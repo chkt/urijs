@@ -1,7 +1,8 @@
 /**
  * Returns a copy of this extended by pattern
- * @param {String} pattern The extension pattern
- * @param {Uint} [length] The extension length
+ * @private
+ * @param {String} pattern - The extension pattern
+ * @param {Uint} [length] - The extension length
  * @returns {String}
  * @throws {TypeError} if pattern is not a nonempty String
  * @throws {TypeError} if length is not an Uint or undefined
@@ -48,7 +49,8 @@ function _extendRight(pattern, length) {
 
 /**
  * Returns an Array of utf-8 encoded character codes of this at index
- * @param {Int} index The character index
+ * @private
+ * @param {Int} index - The character index
  * @returns {Array}
  * @throws {TypeError} if index is not an Int
  * @throws {RangeError} if index is not in range
@@ -72,7 +74,7 @@ function _u8CharCodeAt(index) {
 			lead = string.charCodeAt(index - 1);
 			trail = code;
 
-			if ((lead & 0xFC00) != 0xD800) throw new Error();
+			if ((lead & 0xFC00) !== 0xD800) throw new Error();
 		}
 		else {
 			lead = code;
@@ -98,7 +100,8 @@ function _u8CharCodeAt(index) {
 
 /**
  * Returns a string representing the percent-encoded character of this at index
- * @param {Int} index The character index
+ * @private
+ * @param {Int} index - The character index
  * @returns {String}
  */
 function _pctCharAt(index) {
@@ -109,8 +112,8 @@ function _pctCharAt(index) {
 
 /**
  * Returns an Array of utf-8 encoded character codes of this
- * @returns {Array}
  * @private
+ * @returns {Array}
  */
 function _toU8CharCodes() {
 	const string = String(this);
@@ -218,16 +221,16 @@ export function fromPctChar(char) {
 
 	const str = match[0], code = [];
 
-	for (var i = str.length - 2; i > -1; i -= 3) code.unshift(Number.parseInt("0x" + str.substr(i, 2)));
+	for (var i = str.length - 2; i > -1; i -= 3) code.unshift(Number.parseInt(`0x${ str.substr(i, 2) }`));
 
 	return fromUtf8CharCode(code);
 }
 
 /**
  * Returns a copy of string extended by pattern
- * @param {String} string The source string
- * @param {String} pattern The extension pattern
- * @param {Uint} [length] The extension length
+ * @param {String} string - The source string
+ * @param {String} pattern - The extension pattern
+ * @param {Uint} [length] - The extension length
  * @returns {String}
  */
 export function extendLeft(string, pattern, length) {
@@ -251,8 +254,8 @@ export function extendRight(string, pattern, length) {
 
 /**
  * Returns an Array of utf-8 encoded character codes of string at index
- * @param {String} string The source string
- * @param {Int} index The character index
+ * @param {String} string - The source string
+ * @param {Int} index - The character index
  * @returns {Array}
  * @throws {TypeError} if string is not a string
  */
@@ -264,8 +267,8 @@ export function u8CharCodeAt(string, index) {
 
 /**
  * Returns a string representing the percent-encoded character of string at index
- * @param {String} string The source string
- * @param {Int} index The character index
+ * @param {String} string - The source string
+ * @param {Int} index - The character index
  * @returns {String}
  */
 export function pctCharAt(string, index) {
